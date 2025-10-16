@@ -1,0 +1,201 @@
+# =============================================================================
+# VITACOIN .gitignore
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Binaries and Build Artifacts
+# -----------------------------------------------------------------------------
+build/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+vitacoind
+*.test
+*.out
+
+# Coverage reports
+coverage.txt
+*.coverprofile
+
+# -----------------------------------------------------------------------------
+# Go Specific
+# -----------------------------------------------------------------------------
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Compiled Object files
+*.o
+*.a
+*.so
+
+# -----------------------------------------------------------------------------
+# IDE and Editor Files
+# -----------------------------------------------------------------------------
+# JetBrains IDEs (IntelliJ, GoLand, etc.)
+.idea/
+*.iml
+*.iws
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.sw?
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# -----------------------------------------------------------------------------
+# Environment and Configuration
+# -----------------------------------------------------------------------------
+# Local development
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Local config overrides
+config.local.yml
+config.local.yaml
+
+# -----------------------------------------------------------------------------
+# Blockchain Node Data
+# -----------------------------------------------------------------------------
+# Testnet data
+.vitacoind/
+mytestnet/
+testnet/
+data/
+node_data/
+
+# Keyring
+keyring-test/
+keyring-file/
+
+# -----------------------------------------------------------------------------
+# Logs and Debug Files
+# -----------------------------------------------------------------------------
+*.log
+*.log.*
+logs/
+debug.log
+error.log
+
+# -----------------------------------------------------------------------------
+# Temporary Files
+# -----------------------------------------------------------------------------
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.cache
+
+# -----------------------------------------------------------------------------
+# OS Specific
+# -----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# -----------------------------------------------------------------------------
+# Protobuf Generated Files
+# -----------------------------------------------------------------------------
+# Note: We're keeping generated files in the repo for now
+# Uncomment if you want to exclude them:
+# *.pb.go
+# *.pb.gw.go
+
+# -----------------------------------------------------------------------------
+# Documentation Build Artifacts
+# -----------------------------------------------------------------------------
+# If using documentation generators
+docs/_build/
+docs/.doctrees/
+site/
+
+# Personal documentation (local only, not committed to GitHub)
+docs/ORGANIZATION.md
+docs/README.md
+docs/REPO_ORGANIZATION_SUMMARY.md
+docs/project/
+docs/development/
+docs/architecture/DEV_SETUP.md
+
+# -----------------------------------------------------------------------------
+# Testing and CI/CD
+# -----------------------------------------------------------------------------
+# Test results
+test-results/
+*.test.log
+
+# CI/CD artifacts
+.github/workflows/artifacts/
+
+# -----------------------------------------------------------------------------
+# Dependencies and Package Managers
+# -----------------------------------------------------------------------------
+# Node modules (if using any JS tools)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python (if using any Python tools)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+
+# -----------------------------------------------------------------------------
+# Security and Sensitive Data
+# -----------------------------------------------------------------------------
+# Private keys and certificates
+*.key
+*.pem
+*.cert
+*.crt
+secrets/
+.secrets/
+
+# Wallet files
+wallet.dat
+*.wallet
+
+# -----------------------------------------------------------------------------
+# Custom Project Specific
+# -----------------------------------------------------------------------------
+# Add any project-specific ignores here

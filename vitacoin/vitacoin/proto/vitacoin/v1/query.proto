@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package vitacoin.v1;
+
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "vitacoin/v1/params.proto";
+import "vitacoin/v1/genesis.proto";
+
+option go_package = "github.com/esspron/VITACOIN/x/vitacoin/types";
+
+// Query defines the gRPC querier service for the vitacoin module.
+service Query {
+  // Params queries the parameters of the vitacoin module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/params";
+  }
+  
+  // Merchant queries a merchant by address
+  rpc Merchant(QueryMerchantRequest) returns (QueryMerchantResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/merchant/{address}";
+  }
+  
+  // MerchantAll queries all merchants
+  rpc MerchantAll(QueryAllMerchantRequest) returns (QueryAllMerchantResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/merchant";
+  }
+  
+  // Payment queries a payment by ID
+  rpc Payment(QueryPaymentRequest) returns (QueryPaymentResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/payment/{id}";
+  }
+  
+  // PaymentAll queries all payments
+  rpc PaymentAll(QueryAllPaymentRequest) returns (QueryAllPaymentResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/payment";
+  }
+  
+  // Vault queries a vault by ID
+  rpc Vault(QueryVaultRequest) returns (QueryVaultResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/vault/{id}";
+  }
+  
+  // VaultAll queries all vaults
+  rpc VaultAll(QueryAllVaultRequest) returns (QueryAllVaultResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/vault";
+  }
+  
+  // RewardPool queries a reward pool by ID
+  rpc RewardPool(QueryRewardPoolRequest) returns (QueryRewardPoolResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/pool/{id}";
+  }
+  
+  // RewardPoolAll queries all reward pools
+  rpc RewardPoolAll(QueryAllRewardPoolRequest) returns (QueryAllRewardPoolResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/pool";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryMerchantRequest is the request type for the Query/Merchant RPC method.
+message QueryMerchantRequest {
+  string address = 1;
+}
+
+// QueryMerchantResponse is the response type for the Query/Merchant RPC method.
+message QueryMerchantResponse {
+  Merchant merchant = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllMerchantRequest is the request type for the Query/MerchantAll RPC method.
+message QueryAllMerchantRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllMerchantResponse is the response type for the Query/MerchantAll RPC method.
+message QueryAllMerchantResponse {
+  repeated Merchant merchants = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryPaymentRequest is the request type for the Query/Payment RPC method.
+message QueryPaymentRequest {
+  string id = 1;
+}
+
+// QueryPaymentResponse is the response type for the Query/Payment RPC method.
+message QueryPaymentResponse {
+  Payment payment = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllPaymentRequest is the request type for the Query/PaymentAll RPC method.
+message QueryAllPaymentRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllPaymentResponse is the response type for the Query/PaymentAll RPC method.
+message QueryAllPaymentResponse {
+  repeated Payment payments = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryVaultRequest is the request type for the Query/Vault RPC method.
+message QueryVaultRequest {
+  string id = 1;
+}
+
+// QueryVaultResponse is the response type for the Query/Vault RPC method.
+message QueryVaultResponse {
+  Vault vault = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllVaultRequest is the request type for the Query/VaultAll RPC method.
+message QueryAllVaultRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllVaultResponse is the response type for the Query/VaultAll RPC method.
+message QueryAllVaultResponse {
+  repeated Vault vaults = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryRewardPoolRequest is the request type for the Query/RewardPool RPC method.
+message QueryRewardPoolRequest {
+  string id = 1;
+}
+
+// QueryRewardPoolResponse is the response type for the Query/RewardPool RPC method.
+message QueryRewardPoolResponse {
+  RewardPool pool = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllRewardPoolRequest is the request type for the Query/RewardPoolAll RPC method.
+message QueryAllRewardPoolRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllRewardPoolResponse is the response type for the Query/RewardPoolAll RPC method.
+message QueryAllRewardPoolResponse {
+  repeated RewardPool pools = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

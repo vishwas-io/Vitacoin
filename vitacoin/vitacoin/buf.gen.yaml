@@ -1,0 +1,17 @@
+version: v1
+plugins:
+  - name: gocosmos
+    out: .
+    opt: plugins=grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types
+  - name: grpc-gateway
+    out: .
+    opt: logtostderr=true,allow_colon_final_segments=true
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/vitacoin/vitacoin
+    except:
+      - buf.build/googleapis/googleapis
+      - buf.build/cosmos/cosmos-sdk
+      - buf.build/cosmos/cosmos-proto
+      - buf.build/cosmos/gogo-proto

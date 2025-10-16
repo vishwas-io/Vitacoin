@@ -1,0 +1,25 @@
+version: "1.0"
+chain_id: "vitacoin-1"
+moniker: "VITACOIN Node"
+node_home: "$HOME/.vitacoin"
+log_level: "info"
+seeds: ""
+persistent_peers: ""
+minimum_gas_prices: "0.01uvita"
+enable_prometheus: true
+
+# Configure the application parameters
+app:
+  max_mempool_size: 1000
+  timeout_commit: "5s"
+
+# Configure the RPC settings
+rpc:
+  laddr: "tcp://0.0.0.0:26657"
+  cors_allowed_origins: ["*"]
+
+# Configure the P2P settings
+p2p:
+  laddr: "tcp://0.0.0.0:26656"
+  persistent_peers: ""
+  seeds: ""

@@ -1,0 +1,192 @@
+syntax = "proto3";
+
+package vitacoin.v1;
+
+import "gogoproto/gogo.proto";
+import "vitacoin/v1/params.proto";
+
+option go_package = "github.com/esspron/VITACOIN/x/vitacoin/types";
+
+// GenesisState defines the vitacoin module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+  
+  // merchant_list defines the list of registered merchants at genesis
+  repeated Merchant merchant_list = 2 [(gogoproto.nullable) = false];
+  
+  // payment_list defines the list of payments at genesis
+  repeated Payment payment_list = 3 [(gogoproto.nullable) = false];
+  
+  // vault_list defines the list of time-locked vaults at genesis
+  repeated Vault vault_list = 4 [(gogoproto.nullable) = false];
+  
+  // pool_list defines the list of reward pools at genesis
+  repeated RewardPool pool_list = 5 [(gogoproto.nullable) = false];
+}
+
+// Merchant represents a registered merchant in the e-commerce system
+message Merchant {
+  // address is the merchant's account address
+  string address = 1 [(gogoproto.moretags) = "yaml:\"address\""];
+  
+  // business_name is the merchant's business name
+  string business_name = 2;
+  
+  // tier is the merchant's tier level (affects fees and features)
+  MerchantTier tier = 3;
+  
+  // stake_amount is the amount staked by the merchant (in avita)
+  string stake_amount = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // registration_height is the block height when merchant registered
+  int64 registration_height = 5;
+  
+  // is_active indicates if the merchant is currently active
+  bool is_active = 6;
+  
+  // total_transactions is the total number of transactions processed
+  uint64 total_transactions = 7;
+  
+  // total_volume is the total transaction volume (in avita)
+  string total_volume = 8 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MerchantTier defines the tier levels for merchants
+enum MerchantTier {
+  option (gogoproto.goproto_enum_prefix) = false;
+  
+  // MERCHANT_TIER_UNSPECIFIED is the default tier
+  MERCHANT_TIER_UNSPECIFIED = 0 [(gogoproto.enumvalue_customname) = "MerchantTierUnspecified"];
+  
+  // MERCHANT_TIER_BRONZE is the bronze tier (basic features)
+  MERCHANT_TIER_BRONZE = 1 [(gogoproto.enumvalue_customname) = "MerchantTierBronze"];
+  
+  // MERCHANT_TIER_SILVER is the silver tier (enhanced features)
+  MERCHANT_TIER_SILVER = 2 [(gogoproto.enumvalue_customname) = "MerchantTierSilver"];
+  
+  // MERCHANT_TIER_GOLD is the gold tier (premium features)
+  MERCHANT_TIER_GOLD = 3 [(gogoproto.enumvalue_customname) = "MerchantTierGold"];
+  
+  // MERCHANT_TIER_PLATINUM is the platinum tier (all features)
+  MERCHANT_TIER_PLATINUM = 4 [(gogoproto.enumvalue_customname) = "MerchantTierPlatinum"];
+}
+
+// Payment represents a payment transaction in the e-commerce system
+message Payment {
+  // id is the unique payment identifier
+  string id = 1;
+  
+  // from_address is the payer's address
+  string from_address = 2;
+  
+  // to_address is the payee's (merchant's) address
+  string to_address = 3;
+  
+  // amount is the payment amount (in avita)
+  string amount = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // status is the payment status
+  PaymentStatus status = 5;
+  
+  // creation_height is the block height when payment was created
+  int64 creation_height = 6;
+  
+  // completion_height is the block height when payment was completed (0 if pending)
+  int64 completion_height = 7;
+  
+  // memo is an optional payment memo
+  string memo = 8;
+}
+
+// PaymentStatus defines the status of a payment
+enum PaymentStatus {
+  option (gogoproto.goproto_enum_prefix) = false;
+  
+  // PAYMENT_STATUS_UNSPECIFIED is the default status
+  PAYMENT_STATUS_UNSPECIFIED = 0 [(gogoproto.enumvalue_customname) = "PaymentStatusUnspecified"];
+  
+  // PAYMENT_STATUS_PENDING means payment is pending confirmation
+  PAYMENT_STATUS_PENDING = 1 [(gogoproto.enumvalue_customname) = "PaymentStatusPending"];
+  
+  // PAYMENT_STATUS_COMPLETED means payment is completed
+  PAYMENT_STATUS_COMPLETED = 2 [(gogoproto.enumvalue_customname) = "PaymentStatusCompleted"];
+  
+  // PAYMENT_STATUS_FAILED means payment failed
+  PAYMENT_STATUS_FAILED = 3 [(gogoproto.enumvalue_customname) = "PaymentStatusFailed"];
+  
+  // PAYMENT_STATUS_REFUNDED means payment was refunded
+  PAYMENT_STATUS_REFUNDED = 4 [(gogoproto.enumvalue_customname) = "PaymentStatusRefunded"];
+}
+
+// Vault represents a time-locked vault for loyalty rewards
+message Vault {
+  // id is the unique vault identifier
+  string id = 1;
+  
+  // owner is the vault owner's address
+  string owner = 2;
+  
+  // amount is the locked amount (in avita)
+  string amount = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // lock_duration is the lock duration in blocks
+  uint64 lock_duration = 4;
+  
+  // creation_height is the block height when vault was created
+  int64 creation_height = 5;
+  
+  // unlock_height is the block height when vault unlocks
+  int64 unlock_height = 6;
+  
+  // reward_multiplier is the reward multiplier based on lock duration
+  string reward_multiplier = 7 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // is_active indicates if the vault is currently active
+  bool is_active = 8;
+}
+
+// RewardPool represents a merchant loyalty reward pool
+message RewardPool {
+  // id is the unique pool identifier
+  string id = 1;
+  
+  // merchant_address is the merchant's address who created the pool
+  string merchant_address = 2;
+  
+  // total_rewards is the total rewards in the pool (in avita)
+  string total_rewards = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // distributed_rewards is the amount already distributed (in avita)
+  string distributed_rewards = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // start_height is the block height when pool started
+  int64 start_height = 5;
+  
+  // end_height is the block height when pool ends (0 means no end)
+  int64 end_height = 6;
+  
+  // is_active indicates if the pool is currently active
+  bool is_active = 7;
+}

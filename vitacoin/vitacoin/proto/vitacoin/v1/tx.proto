@@ -1,0 +1,284 @@
+syntax = "proto3";
+
+package vitacoin.v1;
+
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "vitacoin/v1/params.proto";
+import "vitacoin/v1/genesis.proto";
+
+option go_package = "github.com/esspron/VITACOIN/x/vitacoin/types";
+
+// Msg defines the vitacoin Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  
+  // UpdateParams updates the module parameters.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+  
+  // RegisterMerchant registers a new merchant.
+  rpc RegisterMerchant(MsgRegisterMerchant) returns (MsgRegisterMerchantResponse);
+  
+  // UpdateMerchant updates an existing merchant.
+  rpc UpdateMerchant(MsgUpdateMerchant) returns (MsgUpdateMerchantResponse);
+  
+  // CreatePayment creates a new payment transaction.
+  rpc CreatePayment(MsgCreatePayment) returns (MsgCreatePaymentResponse);
+  
+  // CompletePayment completes a pending payment.
+  rpc CompletePayment(MsgCompletePayment) returns (MsgCompletePaymentResponse);
+  
+  // RefundPayment refunds a completed payment.
+  rpc RefundPayment(MsgRefundPayment) returns (MsgRefundPaymentResponse);
+  
+  // CreateVault creates a time-locked vault.
+  rpc CreateVault(MsgCreateVault) returns (MsgCreateVaultResponse);
+  
+  // WithdrawVault withdraws from an unlocked vault.
+  rpc WithdrawVault(MsgWithdrawVault) returns (MsgWithdrawVaultResponse);
+  
+  // CreateRewardPool creates a merchant reward pool.
+  rpc CreateRewardPool(MsgCreateRewardPool) returns (MsgCreateRewardPoolResponse);
+  
+  // DistributeRewards distributes rewards from a pool.
+  rpc DistributeRewards(MsgDistributeRewards) returns (MsgDistributeRewardsResponse);
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name)           = "vitacoin/x/vitacoin/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the module parameters to update.
+  Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
+
+// MsgRegisterMerchant is the Msg/RegisterMerchant request type.
+message MsgRegisterMerchant {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/RegisterMerchant";
+  
+  // sender is the address registering as a merchant
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // business_name is the merchant's business name
+  string business_name = 2;
+  
+  // stake_amount is the initial stake amount
+  string stake_amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgRegisterMerchantResponse defines the response for MsgRegisterMerchant.
+message MsgRegisterMerchantResponse {
+  // merchant_id is the newly created merchant ID
+  string merchant_id = 1;
+}
+
+// MsgUpdateMerchant is the Msg/UpdateMerchant request type.
+message MsgUpdateMerchant {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/UpdateMerchant";
+  
+  // sender is the merchant's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // business_name is the updated business name (optional)
+  string business_name = 2;
+  
+  // additional_stake is the additional stake to add (optional)
+  string additional_stake = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgUpdateMerchantResponse defines the response for MsgUpdateMerchant.
+message MsgUpdateMerchantResponse {}
+
+// MsgCreatePayment is the Msg/CreatePayment request type.
+message MsgCreatePayment {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/CreatePayment";
+  
+  // sender is the payer's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // merchant_address is the merchant's address
+  string merchant_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // amount is the payment amount
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // memo is an optional payment memo
+  string memo = 4;
+}
+
+// MsgCreatePaymentResponse defines the response for MsgCreatePayment.
+message MsgCreatePaymentResponse {
+  // payment_id is the newly created payment ID
+  string payment_id = 1;
+}
+
+// MsgCompletePayment is the Msg/CompletePayment request type.
+message MsgCompletePayment {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/CompletePayment";
+  
+  // sender is the merchant's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // payment_id is the payment ID to complete
+  string payment_id = 2;
+}
+
+// MsgCompletePaymentResponse defines the response for MsgCompletePayment.
+message MsgCompletePaymentResponse {}
+
+// MsgRefundPayment is the Msg/RefundPayment request type.
+message MsgRefundPayment {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/RefundPayment";
+  
+  // sender is the merchant's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // payment_id is the payment ID to refund
+  string payment_id = 2;
+  
+  // reason is the refund reason
+  string reason = 3;
+}
+
+// MsgRefundPaymentResponse defines the response for MsgRefundPayment.
+message MsgRefundPaymentResponse {}
+
+// MsgCreateVault is the Msg/CreateVault request type.
+message MsgCreateVault {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/CreateVault";
+  
+  // sender is the vault creator's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // amount is the amount to lock
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // lock_duration is the lock duration in blocks
+  uint64 lock_duration = 3;
+}
+
+// MsgCreateVaultResponse defines the response for MsgCreateVault.
+message MsgCreateVaultResponse {
+  // vault_id is the newly created vault ID
+  string vault_id = 1;
+  
+  // unlock_height is when the vault unlocks
+  int64 unlock_height = 2;
+}
+
+// MsgWithdrawVault is the Msg/WithdrawVault request type.
+message MsgWithdrawVault {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/WithdrawVault";
+  
+  // sender is the vault owner's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // vault_id is the vault ID to withdraw from
+  string vault_id = 2;
+}
+
+// MsgWithdrawVaultResponse defines the response for MsgWithdrawVault.
+message MsgWithdrawVaultResponse {
+  // amount_withdrawn is the amount withdrawn
+  string amount_withdrawn = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // rewards_earned is the rewards earned
+  string rewards_earned = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgCreateRewardPool is the Msg/CreateRewardPool request type.
+message MsgCreateRewardPool {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/CreateRewardPool";
+  
+  // sender is the merchant's address creating the pool
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // total_rewards is the total rewards to allocate
+  string total_rewards = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // duration_blocks is the pool duration in blocks (0 for unlimited)
+  uint64 duration_blocks = 3;
+}
+
+// MsgCreateRewardPoolResponse defines the response for MsgCreateRewardPool.
+message MsgCreateRewardPoolResponse {
+  // pool_id is the newly created pool ID
+  string pool_id = 1;
+}
+
+// MsgDistributeRewards is the Msg/DistributeRewards request type.
+message MsgDistributeRewards {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "vitacoin/DistributeRewards";
+  
+  // sender is the merchant's address
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // pool_id is the pool to distribute from
+  string pool_id = 2;
+  
+  // recipients is the list of recipient addresses
+  repeated string recipients = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // amounts is the list of amounts to distribute
+  repeated string amounts = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgDistributeRewardsResponse defines the response for MsgDistributeRewards.
+message MsgDistributeRewardsResponse {
+  // total_distributed is the total amount distributed
+  string total_distributed = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}

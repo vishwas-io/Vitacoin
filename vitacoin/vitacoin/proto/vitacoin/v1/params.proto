@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package vitacoin.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/esspron/VITACOIN/x/vitacoin/types";
+
+// Params defines the parameters for the vitacoin module.
+// These parameters control the e-commerce payment system behavior.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  
+  // min_gas_price is the minimum gas price for transactions (in avita)
+  string min_gas_price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // transaction_fee_percent is the percentage fee charged on each transaction (0-100)
+  // Example: 0.5 = 0.5% fee
+  string transaction_fee_percent = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // merchant_fee_discount is the discount percentage for verified merchants (0-100)
+  // Example: 50.0 = 50% discount on transaction fees
+  string merchant_fee_discount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // max_transaction_amount is the maximum allowed transaction amount (in avita)
+  // 0 means no limit
+  string max_transaction_amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // payment_timeout_blocks is the number of blocks before a pending payment expires
+  uint64 payment_timeout_blocks = 5;
+  
+  // merchant_registration_fee is the fee to register as a merchant (in avita)
+  string merchant_registration_fee = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // enable_merchant_loyalty defines whether merchant loyalty rewards are enabled
+  bool enable_merchant_loyalty = 7;
+  
+  // loyalty_reward_percent is the percentage of transaction value given as loyalty points (0-100)
+  string loyalty_reward_percent = 8 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // min_merchant_stake is the minimum amount a merchant must stake (in avita)
+  string min_merchant_stake = 9 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // enable_instant_settlement defines whether instant settlement is enabled for payments
+  bool enable_instant_settlement = 10;
+  
+  // fee_burn_percent is the percentage of transaction fees that are burned (0-100)
+  // Implements deflationary tokenomics
+  string fee_burn_percent = 11 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}

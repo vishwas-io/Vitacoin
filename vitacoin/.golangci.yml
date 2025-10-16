@@ -1,0 +1,180 @@
+run:
+  tests: true
+  timeout: 10m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - asciicheck        # Simple linter to check that your code does not contain non-ASCII identifiers
+    - bidichk           # Checks for dangerous unicode character sequences
+    - bodyclose         # checks whether HTTP response body is closed successfully
+    - depguard          # Go linter that checks if package imports are in a list of acceptable packages
+    - dogsled           # Checks assignments with too many blank identifiers
+    - dupword           # checks for duplicate words in the source code
+    - durationcheck     # check for two durations multiplied together
+    - errcheck          # Errcheck is a program for checking for unchecked errors in go programs
+    - errorlint         # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13
+    - exportloopref     # checks for pointers to enclosing loop variables
+    - gci               # Gci control golang package import order and make it always deterministic
+    - goconst           # Finds repeated strings that could be replaced by a constant
+    - gocritic          # The most opinionated Go source code linter
+    - gofmt             # Gofmt checks whether code was gofmt-ed
+    - gofumpt           # Gofumpt checks whether code was gofumpt-ed
+    - goimports         # Goimports does everything that gofmt does. Additionally it checks unused imports
+    - gosec             # Inspects source code for security problems
+    - gosimple          # Linter for Go source code that specializes in simplifying a code
+    - govet             # Vet examines Go source code and reports suspicious constructs
+    - ineffassign       # Detects when assignments to existing variables are not used
+    - misspell          # Finds commonly misspelled English words in comments
+    - nakedret          # Finds naked returns in functions greater than a specified function length
+    - nolintlint        # Reports ill-formed or insufficient nolint directives
+    - revive            # Fast, configurable, extensible, flexible, and beautiful linter for Go
+    - staticcheck       # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
+    - stylecheck        # Stylecheck is a replacement for golint
+    - thelper           # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers
+    - typecheck         # Like the front-end of a Go compiler, parses and type-checks Go code
+    - unconvert         # Remove unnecessary type conversions
+    - unused            # Checks Go code for unused constants, variables, functions and types
+    - whitespace        # Tool for detection of leading and trailing whitespace
+
+  disable:
+    - cyclop            # checks function and package cyclomatic complexity
+    - exhaustive        # check exhaustiveness of enum switch statements
+    - exhaustruct       # Checks if all struct's fields are initialized
+    - forbidigo         # Forbids identifiers
+    - funlen            # Tool for detection of long functions
+    - gochecknoglobals  # Checks that no globals are present in Go code
+    - gochecknoinits    # Checks that no init functions are present in Go code
+    - gocognit          # Computes and checks the cognitive complexity of functions
+    - gocyclo           # Computes and checks the cyclomatic complexity of functions
+    - godot             # Check if comments end in a period
+    - godox             # Tool for detection of FIXME, TODO and other comment keywords
+    - goerr113          # Golang linter to check the errors handling expressions
+    - gomnd             # An analyzer to detect magic numbers
+    - gomoddirectives   # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod
+    - gomodguard        # Allow and block list linter for direct Go module dependencies
+    - goprintffuncname  # Checks that printf-like functions are named with `f` at the end
+    - lll               # Reports long lines
+    - maintidx          # maintidx measures the maintainability index of each function
+    - makezero          # Finds slice declarations with non-zero initial length
+    - nestif            # Reports deeply nested if statements
+    - nilnil            # Checks that there is no simultaneous return of `nil` error and an invalid value
+    - nlreturn          # nlreturn checks for a new line before return and branch statements to increase code clarity
+    - noctx             # noctx finds sending http request without context.Context
+    - nosprintfhostport # Checks for misuse of Sprintf to construct a host with port in a URL
+    - paralleltest      # paralleltest detects missing usage of t.Parallel() method in your Go test
+    - predeclared       # find code that shadows one of Go's predeclared identifiers
+    - promlinter        # Check Prometheus metrics naming via promlint
+    - tagliatelle       # Checks the struct tags
+    - testpackage       # linter that makes you use a separate _test package
+    - tparallel         # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes
+    - varnamelen        # checks that the length of a variable's name matches its scope
+    - wrapcheck         # Checks that errors returned from external packages are wrapped
+    - wsl               # Whitespace Linter - Forces you to use empty lines!
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/vitacoin/vitacoin)
+      - prefix(cosmossdk.io)
+      - prefix(github.com/cosmos/cosmos-sdk)
+  
+  gofumpt:
+    extra-rules: true
+  
+  gosec:
+    excludes:
+      - G115 # integer overflow conversion is a common pattern in Cosmos SDK
+    
+  govet:
+    check-shadowing: true
+  
+  misspell:
+    locale: US
+  
+  nakedret:
+    max-func-lines: 50
+  
+  revive:
+    rules:
+      - name: var-naming
+        disabled: true
+      - name: context-as-argument
+        disabled: false
+      - name: dot-imports
+        disabled: false
+      - name: error-return
+        disabled: false
+      - name: error-strings
+        disabled: false
+      - name: error-naming
+        disabled: false
+      - name: exported
+        disabled: false
+      - name: if-return
+        disabled: false
+      - name: increment-decrement
+        disabled: false
+      - name: indent-error-flow
+        disabled: false
+      - name: package-comments
+        disabled: true
+      - name: range
+        disabled: false
+      - name: receiver-naming
+        disabled: false
+      - name: time-naming
+        disabled: false
+      - name: unexported-return
+        disabled: false
+      - name: var-declaration
+        disabled: false
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+    
+    - path: cmd/
+      linters:
+        - gocyclo
+        - gocognit
+    
+    # Cosmos SDK specific exclusions
+    - text: "weak cryptographic primitive"
+      linters:
+        - gosec
+    
+    - text: "ST1003:"
+      linters:
+        - stylecheck
+    
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - goconst
+    
+    # Allow complex functions in app.go
+    - path: app/app\.go
+      linters:
+        - gocyclo
+        - gocognit
+        - funlen
+  
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: true
