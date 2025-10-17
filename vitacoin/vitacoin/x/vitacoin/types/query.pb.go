@@ -976,6 +976,17 @@ type QueryClient interface {
 	RewardPool(ctx context.Context, in *QueryRewardPoolRequest, opts ...grpc.CallOption) (*QueryRewardPoolResponse, error)
 	// RewardPoolAll queries all reward pools
 	RewardPoolAll(ctx context.Context, in *QueryAllRewardPoolRequest, opts ...grpc.CallOption) (*QueryAllRewardPoolResponse, error)
+	// Phase 3: Fee & Economics Queries
+	// FeeStatistics queries cumulative fee statistics
+	FeeStatistics(ctx context.Context, in *QueryFeeStatisticsRequest, opts ...grpc.CallOption) (*QueryFeeStatisticsResponse, error)
+	// BurnStatistics queries burn mechanism statistics
+	BurnStatistics(ctx context.Context, in *QueryBurnStatisticsRequest, opts ...grpc.CallOption) (*QueryBurnStatisticsResponse, error)
+	// SupplySnapshot queries supply snapshot at specific height
+	SupplySnapshot(ctx context.Context, in *QuerySupplySnapshotRequest, opts ...grpc.CallOption) (*QuerySupplySnapshotResponse, error)
+	// SupplySnapshotLatest queries the most recent supply snapshot
+	SupplySnapshotLatest(ctx context.Context, in *QuerySupplySnapshotLatestRequest, opts ...grpc.CallOption) (*QuerySupplySnapshotLatestResponse, error)
+	// FeeAccumulator queries the current block's fee accumulator
+	FeeAccumulator(ctx context.Context, in *QueryFeeAccumulatorRequest, opts ...grpc.CallOption) (*QueryFeeAccumulatorResponse, error)
 }
 
 type queryClient struct {
@@ -1067,6 +1078,51 @@ func (c *queryClient) RewardPoolAll(ctx context.Context, in *QueryAllRewardPoolR
 	return out, nil
 }
 
+func (c *queryClient) FeeStatistics(ctx context.Context, in *QueryFeeStatisticsRequest, opts ...grpc.CallOption) (*QueryFeeStatisticsResponse, error) {
+	out := new(QueryFeeStatisticsResponse)
+	err := c.cc.Invoke(ctx, "/vitacoin.v1.Query/FeeStatistics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) BurnStatistics(ctx context.Context, in *QueryBurnStatisticsRequest, opts ...grpc.CallOption) (*QueryBurnStatisticsResponse, error) {
+	out := new(QueryBurnStatisticsResponse)
+	err := c.cc.Invoke(ctx, "/vitacoin.v1.Query/BurnStatistics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) SupplySnapshot(ctx context.Context, in *QuerySupplySnapshotRequest, opts ...grpc.CallOption) (*QuerySupplySnapshotResponse, error) {
+	out := new(QuerySupplySnapshotResponse)
+	err := c.cc.Invoke(ctx, "/vitacoin.v1.Query/SupplySnapshot", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) SupplySnapshotLatest(ctx context.Context, in *QuerySupplySnapshotLatestRequest, opts ...grpc.CallOption) (*QuerySupplySnapshotLatestResponse, error) {
+	out := new(QuerySupplySnapshotLatestResponse)
+	err := c.cc.Invoke(ctx, "/vitacoin.v1.Query/SupplySnapshotLatest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) FeeAccumulator(ctx context.Context, in *QueryFeeAccumulatorRequest, opts ...grpc.CallOption) (*QueryFeeAccumulatorResponse, error) {
+	out := new(QueryFeeAccumulatorResponse)
+	err := c.cc.Invoke(ctx, "/vitacoin.v1.Query/FeeAccumulator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Params queries the parameters of the vitacoin module.
@@ -1087,6 +1143,17 @@ type QueryServer interface {
 	RewardPool(context.Context, *QueryRewardPoolRequest) (*QueryRewardPoolResponse, error)
 	// RewardPoolAll queries all reward pools
 	RewardPoolAll(context.Context, *QueryAllRewardPoolRequest) (*QueryAllRewardPoolResponse, error)
+	// Phase 3: Fee & Economics Queries
+	// FeeStatistics queries cumulative fee statistics
+	FeeStatistics(context.Context, *QueryFeeStatisticsRequest) (*QueryFeeStatisticsResponse, error)
+	// BurnStatistics queries burn mechanism statistics
+	BurnStatistics(context.Context, *QueryBurnStatisticsRequest) (*QueryBurnStatisticsResponse, error)
+	// SupplySnapshot queries supply snapshot at specific height
+	SupplySnapshot(context.Context, *QuerySupplySnapshotRequest) (*QuerySupplySnapshotResponse, error)
+	// SupplySnapshotLatest queries the most recent supply snapshot
+	SupplySnapshotLatest(context.Context, *QuerySupplySnapshotLatestRequest) (*QuerySupplySnapshotLatestResponse, error)
+	// FeeAccumulator queries the current block's fee accumulator
+	FeeAccumulator(context.Context, *QueryFeeAccumulatorRequest) (*QueryFeeAccumulatorResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -1119,6 +1186,21 @@ func (*UnimplementedQueryServer) RewardPool(ctx context.Context, req *QueryRewar
 }
 func (*UnimplementedQueryServer) RewardPoolAll(ctx context.Context, req *QueryAllRewardPoolRequest) (*QueryAllRewardPoolResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RewardPoolAll not implemented")
+}
+func (*UnimplementedQueryServer) FeeStatistics(ctx context.Context, req *QueryFeeStatisticsRequest) (*QueryFeeStatisticsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FeeStatistics not implemented")
+}
+func (*UnimplementedQueryServer) BurnStatistics(ctx context.Context, req *QueryBurnStatisticsRequest) (*QueryBurnStatisticsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BurnStatistics not implemented")
+}
+func (*UnimplementedQueryServer) SupplySnapshot(ctx context.Context, req *QuerySupplySnapshotRequest) (*QuerySupplySnapshotResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SupplySnapshot not implemented")
+}
+func (*UnimplementedQueryServer) SupplySnapshotLatest(ctx context.Context, req *QuerySupplySnapshotLatestRequest) (*QuerySupplySnapshotLatestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SupplySnapshotLatest not implemented")
+}
+func (*UnimplementedQueryServer) FeeAccumulator(ctx context.Context, req *QueryFeeAccumulatorRequest) (*QueryFeeAccumulatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FeeAccumulator not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {

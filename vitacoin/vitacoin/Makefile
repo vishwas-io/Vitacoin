@@ -38,14 +38,14 @@ BUILD_FLAGS := -ldflags '$(ldflags)' -tags '$(BUILD_TAGS)'
 ###                              Build Commands                             ###
 ###############################################################################
 
-# Note: go.mod is at project root (../../go.mod), build from there
-PROJECT_ROOT := $(shell cd ../.. && pwd)
+# Note: go.mod is at parent directory (../go.mod), build from there
+PROJECT_ROOT := $(shell cd .. && pwd)
 
 all: lint test build
 
 build:
 	@echo "🔨 Building vitacoind..."
-	cd "$(PROJECT_ROOT)" && go build -mod=readonly $(BUILD_FLAGS) -o "vitacoin/vitacoin/$(BUILD_DIR)/$(VITACOIND)" ./vitacoin/vitacoin/cmd/vitacoind
+	cd "$(PROJECT_ROOT)" && go build -mod=readonly $(BUILD_FLAGS) -o "vitacoin/$(BUILD_DIR)/$(VITACOIND)" ./vitacoin/cmd/vitacoind
 	@echo "✅ Build complete: $(BUILD_DIR)/$(VITACOIND)"
 
 build-linux:

@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -67,7 +68,8 @@ func (msg *MsgRegisterMerchant) ValidateBasic() error {
 	}
 	
 	// Validate stake amount using enhanced validation
-	if err := ValidatePaymentAmount(msg.StakeAmount); err != nil {
+	minStake := math.NewInt(10000000000000) // 10000 VITA minimum
+	if err := ValidateStakeAmount(msg.StakeAmount, minStake); err != nil {
 		return fmt.Errorf("invalid stake amount: %w", err)
 	}
 	

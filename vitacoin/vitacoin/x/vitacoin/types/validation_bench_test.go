@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 func BenchmarkMsgRegisterMerchant_ValidateBasic(b *testing.B) {

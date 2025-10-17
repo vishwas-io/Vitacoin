@@ -6,7 +6,7 @@ import (
 	
 	"cosmossdk.io/math"
 	
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 // GetParams gets the parameters for the vitacoin module with error handling

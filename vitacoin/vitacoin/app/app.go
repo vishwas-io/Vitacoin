@@ -78,9 +78,9 @@ import (
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin"
-	vitacoinkeeper "github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/keeper"
-	vitacointypes "github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin"
+	vitacoinkeeper "github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/keeper"
+	vitacointypes "github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 const (
@@ -123,7 +123,8 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
-		vitacointypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
+		vitacointypes.ModuleName:       {authtypes.Burner}, // Phase 3: Burner for fee burns
+		vitacointypes.TreasuryModuleName: nil,              // Phase 3: Treasury (governance-controlled, no special permissions)
 	}
 )
 
@@ -316,12 +317,14 @@ func NewVitacoinApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	// Create vitacoin keeper
+	// Create vitacoin keeper with Phase 3 dependencies (BankKeeper, AccountKeeper)
 	app.VitacoinKeeper = vitacoinkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[vitacointypes.StoreKey]),
 		logger,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.BankKeeper,
+		app.AccountKeeper,
 	)
 
 	// ... register all other module keepers and create IBC router, upgrade keeper
@@ -636,6 +639,9 @@ func BlockedAddresses() map[string]bool {
 
 	// allow the following addresses to receive funds
 	delete(modAccAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	
+	// Phase 3: Allow vitacoin_treasury to receive fees from fee distribution
+	delete(modAccAddrs, authtypes.NewModuleAddress(vitacointypes.TreasuryModuleName).String())
 
 	return modAccAddrs
 }

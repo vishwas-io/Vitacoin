@@ -15,8 +15,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/keeper"
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/keeper"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 	_ module.HasServices         = AppModule{}
 	_ module.HasConsensusVersion = AppModule{}
 	_ appmodule.AppModule        = AppModule{}
-	_ appmodule.HasPreBlocker    = AppModule{}
+	// _ appmodule.HasPreBlocker    = AppModule{} // TODO: Implement when needed
 	_ appmodule.HasBeginBlocker  = AppModule{}
 	_ appmodule.HasEndBlocker    = AppModule{}
 )
@@ -127,18 +127,17 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
-// PreBlock implements the HasPreBlocker interface.
-func (am AppModule) PreBlock(ctx sdk.Context) error {
-	// No pre-block logic required for vitacoin module currently
-	return nil
-}
+// PreBlock is commented out for now - implement when needed
+// func (am AppModule) PreBlock(ctx context.Context) (appmodule.ResponsePreBlock, error) {
+// 	return appmodule.ResponsePreBlock{}, nil
+// }
 
 // BeginBlock implements the HasBeginBlocker interface.
-func (am AppModule) BeginBlock(ctx sdk.Context) error {
-	return am.keeper.BeginBlocker(ctx)
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return am.keeper.BeginBlocker(sdk.UnwrapSDKContext(ctx))
 }
 
 // EndBlock implements the HasEndBlocker interface.
-func (am AppModule) EndBlock(ctx sdk.Context) error {
-	return am.keeper.EndBlocker(ctx)
+func (am AppModule) EndBlock(ctx context.Context) error {
+	return am.keeper.EndBlocker(sdk.UnwrapSDKContext(ctx))
 }

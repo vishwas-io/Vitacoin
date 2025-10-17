@@ -56,6 +56,33 @@ service Query {
   rpc RewardPoolAll(QueryAllRewardPoolRequest) returns (QueryAllRewardPoolResponse) {
     option (google.api.http).get = "/vitacoin/vitacoin/v1/pool";
   }
+
+  // Phase 3: Fee & Economics Queries
+
+  // FeeStatistics queries cumulative fee statistics
+  rpc FeeStatistics(QueryFeeStatisticsRequest) returns (QueryFeeStatisticsResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/fee-statistics";
+  }
+
+  // BurnStatistics queries burn mechanism statistics
+  rpc BurnStatistics(QueryBurnStatisticsRequest) returns (QueryBurnStatisticsResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/burn-statistics";
+  }
+
+  // SupplySnapshot queries supply snapshot at specific height
+  rpc SupplySnapshot(QuerySupplySnapshotRequest) returns (QuerySupplySnapshotResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/supply-snapshot/{height}";
+  }
+
+  // SupplySnapshotLatest queries the most recent supply snapshot
+  rpc SupplySnapshotLatest(QuerySupplySnapshotLatestRequest) returns (QuerySupplySnapshotLatestResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/supply-snapshot/latest";
+  }
+
+  // FeeAccumulator queries the current block's fee accumulator
+  rpc FeeAccumulator(QueryFeeAccumulatorRequest) returns (QueryFeeAccumulatorResponse) {
+    option (google.api.http).get = "/vitacoin/vitacoin/v1/fee-accumulator";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -149,4 +176,134 @@ message QueryAllRewardPoolRequest {
 message QueryAllRewardPoolResponse {
   repeated RewardPool pools = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// Phase 3: Fee & Economics Query Messages
+
+// QueryFeeStatisticsRequest is the request type for the Query/FeeStatistics RPC method.
+message QueryFeeStatisticsRequest {}
+
+// QueryFeeStatisticsResponse is the response type for the Query/FeeStatistics RPC method.
+message QueryFeeStatisticsResponse {
+  string total_collected_all_time = 1 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_burned_all_time = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_to_validators_all_time = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_to_treasury_all_time = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  uint64 total_transactions_all_time = 5;
+  int64 last_update_height = 6;
+  int64 current_epoch = 7;
+}
+
+// QueryBurnStatisticsRequest is the request type for the Query/BurnStatistics RPC method.
+message QueryBurnStatisticsRequest {}
+
+// QueryBurnStatisticsResponse is the response type for the Query/BurnStatistics RPC method.
+message QueryBurnStatisticsResponse {
+  string total_burned = 1 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string burn_rate_per_day = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string current_supply = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string burn_cap_supply = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string remaining_to_cap = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  bool burn_cap_reached = 6;
+  int64 last_burn_height = 7;
+}
+
+// QuerySupplySnapshotRequest is the request type for the Query/SupplySnapshot RPC method.
+message QuerySupplySnapshotRequest {
+  int64 height = 1;
+}
+
+// QuerySupplySnapshotResponse is the response type for the Query/SupplySnapshot RPC method.
+message QuerySupplySnapshotResponse {
+  int64 height = 1;
+  int64 timestamp = 2;
+  string total_supply = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string circulating_supply = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string liquid_supply = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string bonded_supply = 6 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string burned_cumulative = 7 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QuerySupplySnapshotLatestRequest is the request type for the Query/SupplySnapshotLatest RPC method.
+message QuerySupplySnapshotLatestRequest {}
+
+// QuerySupplySnapshotLatestResponse is the response type for the Query/SupplySnapshotLatest RPC method.
+message QuerySupplySnapshotLatestResponse {
+  int64 height = 1;
+  int64 timestamp = 2;
+  string total_supply = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string circulating_supply = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string liquid_supply = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string bonded_supply = 6 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string burned_cumulative = 7 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryFeeAccumulatorRequest is the request type for the Query/FeeAccumulator RPC method.
+message QueryFeeAccumulatorRequest {}
+
+// QueryFeeAccumulatorResponse is the response type for the Query/FeeAccumulator RPC method.
+message QueryFeeAccumulatorResponse {
+  int64 height = 1;
+  string total_collected = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  uint64 transaction_count = 3;
 }

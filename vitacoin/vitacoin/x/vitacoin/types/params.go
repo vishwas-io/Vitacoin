@@ -8,25 +8,36 @@ import (
 
 // DefaultParams returns default module parameters
 func DefaultParams() Params {
+	oneVITA := math.NewInt(1000000000000000000) // 1e18 avita = 1 VITA
+	
 	return Params{
 		MinGasPrice:             math.LegacyNewDecWithPrec(1, 3), // 0.001 avita
-		TransactionFeePercent:   math.LegacyNewDecWithPrec(1, 1), // 0.1%
-		MerchantFeeDiscount:     math.LegacyNewDecWithPrec(5, 1), // 50%
+		TransactionFeePercent:   math.LegacyNewDecWithPrec(1, 3), // 0.1% (was 0.1 = 10%)
+		MerchantFeeDiscount:     math.LegacyZeroDec(),            // 0% discount (disabled for mainnet)
 		MaxTransactionAmount:    math.NewInt(0),                  // No limit
 		PaymentTimeoutBlocks:    100,                             // ~10 minutes at 6s blocks
-		MerchantRegistrationFee: math.NewInt(1000000000000),      // 1000 VITA (1000 * 10^9 avita)
+		MerchantRegistrationFee: math.NewInt(1000).Mul(oneVITA), // 1000 VITA
 		EnableMerchantLoyalty:   true,
 		LoyaltyRewardPercent:    math.LegacyNewDecWithPrec(1, 2), // 1%
-		MinMerchantStake:        math.NewInt(10000000000000),     // 10000 VITA
+		MinMerchantStake:        math.NewInt(1000).Mul(oneVITA),  // 1000 VITA - Bronze tier
 		EnableInstantSettlement: true,
-		FeeBurnPercent:          math.LegacyNewDecWithPrec(25, 2), // 25%
+		
+		// Phase 3: Fee Distribution Parameters
+		FeeBurnPercent:         math.LegacyNewDecWithPrec(25, 2),  // 25% burn
+		FeeValidatorPercent:    math.LegacyNewDecWithPrec(50, 2),  // 50% to validators
+		FeeTreasuryPercent:     math.LegacyNewDecWithPrec(25, 2),  // 25% to treasury
+		MinProtocolFee:         math.NewInt(1000000000000000),      // 0.001 VITA (1e15 avita)
+		MaxProtocolFee:         math.NewInt(100).Mul(oneVITA),      // 100 VITA
+		BurnCapSupply:          math.NewInt(500000000).Mul(oneVITA), // 500M VITA minimum supply
+		PausedFeeCollection:    false,
+		PausedFeeDistribution:  false,
 	}
 }
 
 // Validate performs basic validation of parameters
 func (p Params) Validate() error {
 	if p.MinGasPrice.IsNegative() {
-		return fmt.Errorf("min gas price cannot be negative: %s", p.MinGasPrice)
+		return fmt.Errorf("min gas price must be non-negative: %s", p.MinGasPrice)
 	}
 
 	if p.TransactionFeePercent.IsNegative() || p.TransactionFeePercent.GT(math.LegacyNewDec(100)) {
@@ -38,7 +49,7 @@ func (p Params) Validate() error {
 	}
 
 	if p.MaxTransactionAmount.IsNegative() {
-		return fmt.Errorf("max transaction amount cannot be negative: %s", p.MaxTransactionAmount)
+		return fmt.Errorf("max transaction amount must be non-negative: %s", p.MaxTransactionAmount)
 	}
 
 	if p.PaymentTimeoutBlocks == 0 {
@@ -46,7 +57,7 @@ func (p Params) Validate() error {
 	}
 
 	if p.MerchantRegistrationFee.IsNegative() {
-		return fmt.Errorf("merchant registration fee cannot be negative: %s", p.MerchantRegistrationFee)
+		return fmt.Errorf("merchant registration fee must be non-negative: %s", p.MerchantRegistrationFee)
 	}
 
 	if p.LoyaltyRewardPercent.IsNegative() || p.LoyaltyRewardPercent.GT(math.LegacyNewDec(100)) {
@@ -54,11 +65,45 @@ func (p Params) Validate() error {
 	}
 
 	if p.MinMerchantStake.IsNegative() {
-		return fmt.Errorf("min merchant stake cannot be negative: %s", p.MinMerchantStake)
+		return fmt.Errorf("min merchant stake must be non-negative: %s", p.MinMerchantStake)
 	}
 
 	if p.FeeBurnPercent.IsNegative() || p.FeeBurnPercent.GT(math.LegacyNewDec(100)) {
 		return fmt.Errorf("fee burn percent must be between 0 and 100: %s", p.FeeBurnPercent)
+	}
+
+	// Phase 3: Validate new fee distribution parameters
+	if p.FeeValidatorPercent.IsNegative() || p.FeeValidatorPercent.GT(math.LegacyNewDec(100)) {
+		return fmt.Errorf("fee validator percent must be between 0 and 100: %s", p.FeeValidatorPercent)
+	}
+
+	if p.FeeTreasuryPercent.IsNegative() || p.FeeTreasuryPercent.GT(math.LegacyNewDec(100)) {
+		return fmt.Errorf("fee treasury percent must be between 0 and 100: %s", p.FeeTreasuryPercent)
+	}
+
+	// Validate total fee split equals 100%
+	totalFeePercent := p.FeeBurnPercent.Add(p.FeeValidatorPercent).Add(p.FeeTreasuryPercent)
+	hundredPercent := math.LegacyNewDec(100)
+	if !totalFeePercent.Equal(hundredPercent) {
+		return fmt.Errorf("fee split must total 100%%, got %s%% (burn: %s%%, validator: %s%%, treasury: %s%%)",
+			totalFeePercent, p.FeeBurnPercent, p.FeeValidatorPercent, p.FeeTreasuryPercent)
+	}
+
+	if p.MinProtocolFee.IsNegative() {
+		return fmt.Errorf("min protocol fee must be non-negative: %s", p.MinProtocolFee)
+	}
+
+	if p.MaxProtocolFee.IsNegative() {
+		return fmt.Errorf("max protocol fee must be non-negative: %s", p.MaxProtocolFee)
+	}
+
+	if p.MaxProtocolFee.LT(p.MinProtocolFee) {
+		return fmt.Errorf("max protocol fee %s must be >= min protocol fee %s", 
+			p.MaxProtocolFee, p.MinProtocolFee)
+	}
+
+	if p.BurnCapSupply.IsNegative() {
+		return fmt.Errorf("burn cap supply must be non-negative: %s", p.BurnCapSupply)
 	}
 
 	return nil
@@ -66,18 +111,28 @@ func (p Params) Validate() error {
 
 // String returns a human-readable string representation of the parameters
 func (p Params) String() string {
-	return fmt.Sprintf(`Params:
-  MinGasPrice:             %s
-  TransactionFeePercent:   %s%%
-  MerchantFeeDiscount:     %s%%
-  MaxTransactionAmount:    %s
-  PaymentTimeoutBlocks:    %d
-  MerchantRegistrationFee: %s
-  EnableMerchantLoyalty:   %t
-  LoyaltyRewardPercent:    %s%%
-  MinMerchantStake:        %s
-  EnableInstantSettlement: %t
-  FeeBurnPercent:          %s%%`,
+	return fmt.Sprintf(`Vitacoin Params:
+  Min Gas Price:             %s
+  Transaction Fee Percent:   %s%%
+  Merchant Fee Discount:     %s%%
+  Max Transaction Amount:    %s
+  Payment Timeout Blocks:    %d
+  Merchant Registration Fee: %s
+  Enable Merchant Loyalty:   %t
+  Loyalty Reward Percent:    %s%%
+  Min Merchant Stake:        %s
+  Enable Instant Settlement: %t
+  Fee Distribution:
+    Burn Percent:            %s%%
+    Validator Percent:       %s%%
+    Treasury Percent:        %s%%
+  Protocol Fee Limits:
+    Min Protocol Fee:        %s
+    Max Protocol Fee:        %s
+  Burn Cap Supply:           %s
+  Emergency Flags:
+    Fee Collection Paused:   %t
+    Fee Distribution Paused: %t`,
 		p.MinGasPrice,
 		p.TransactionFeePercent,
 		p.MerchantFeeDiscount,
@@ -89,5 +144,12 @@ func (p Params) String() string {
 		p.MinMerchantStake,
 		p.EnableInstantSettlement,
 		p.FeeBurnPercent,
+		p.FeeValidatorPercent,
+		p.FeeTreasuryPercent,
+		p.MinProtocolFee,
+		p.MaxProtocolFee,
+		p.BurnCapSupply,
+		p.PausedFeeCollection,
+		p.PausedFeeDistribution,
 	)
 }

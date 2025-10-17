@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 // Security and validation enhancements for message handlers

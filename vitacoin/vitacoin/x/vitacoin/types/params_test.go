@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 func TestDefaultParams(t *testing.T) {
@@ -17,8 +17,8 @@ func TestDefaultParams(t *testing.T) {
 
 	// Verify default values
 	require.Equal(t, math.LegacyNewDecWithPrec(1, 3), params.MinGasPrice)
-	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), params.TransactionFeePercent)
-	require.Equal(t, math.LegacyNewDec(50), params.MerchantFeeDiscount)
+	require.Equal(t, math.LegacyNewDecWithPrec(1, 1), params.TransactionFeePercent) // 0.1%
+	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), params.MerchantFeeDiscount) // 50%
 	require.True(t, params.EnableMerchantLoyalty)
 	require.True(t, params.EnableInstantSettlement)
 }

@@ -7,11 +7,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 func TestMsgUpdateParamsValidateBasic(t *testing.T) {
-	validAuthority := "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux"
+	validAuthority := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
 
 	tests := []struct {
 		name      string
@@ -64,7 +64,7 @@ func TestMsgUpdateParamsValidateBasic(t *testing.T) {
 }
 
 func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
-	validAddress := "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux"
+	validAddress := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
 
 	tests := []struct {
 		name      string
@@ -77,7 +77,7 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 			msg: &types.MsgRegisterMerchant{
 				Sender:       validAddress,
 				BusinessName: "Test Business",
-				StakeAmount:  math.NewInt(1000000),
+				StakeAmount:  math.NewInt(10000000000000), // 10000 VITA minimum
 			},
 			expectErr: false,
 		},
@@ -86,7 +86,7 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 			msg: &types.MsgRegisterMerchant{
 				Sender:       "invalid",
 				BusinessName: "Test Business",
-				StakeAmount:  math.NewInt(1000000),
+				StakeAmount:  math.NewInt(10000000000000),
 			},
 			expectErr: true,
 			errMsg:    "invalid sender address",
@@ -96,7 +96,7 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 			msg: &types.MsgRegisterMerchant{
 				Sender:       validAddress,
 				BusinessName: "",
-				StakeAmount:  math.NewInt(1000000),
+				StakeAmount:  math.NewInt(10000000000000),
 			},
 			expectErr: true,
 			errMsg:    "business name cannot be empty",
@@ -106,7 +106,7 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 			msg: &types.MsgRegisterMerchant{
 				Sender:       validAddress,
 				BusinessName: string(make([]byte, 101)), // 101 characters
-				StakeAmount:  math.NewInt(1000000),
+				StakeAmount:  math.NewInt(10000000000000),
 			},
 			expectErr: true,
 			errMsg:    "business name cannot exceed 100 characters",
@@ -119,7 +119,7 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 				StakeAmount:  math.ZeroInt(),
 			},
 			expectErr: true,
-			errMsg:    "stake amount must be positive",
+			errMsg:    "must be positive",
 		},
 		{
 			name: "negative stake amount",
@@ -129,7 +129,7 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 				StakeAmount:  math.NewInt(-1000),
 			},
 			expectErr: true,
-			errMsg:    "stake amount must be positive",
+			errMsg:    "must be positive",
 		},
 	}
 
@@ -147,8 +147,8 @@ func TestMsgRegisterMerchantValidateBasic(t *testing.T) {
 }
 
 func TestMsgCreatePaymentValidateBasic(t *testing.T) {
-	validSender := "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux"
-	validMerchant := "cosmos1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5"
+	validSender := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
+	validMerchant := "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4"
 
 	tests := []struct {
 		name      string
@@ -161,7 +161,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: validMerchant,
-				Amount:          math.NewInt(1000),
+				Amount:          math.NewInt(1000000000000000), // 0.001 VITA minimum
 				Memo:            "Test payment",
 			},
 			expectErr: false,
@@ -171,7 +171,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          "invalid",
 				MerchantAddress: validMerchant,
-				Amount:          math.NewInt(1000),
+				Amount:          math.NewInt(1000000000000000),
 				Memo:            "Test payment",
 			},
 			expectErr: true,
@@ -182,7 +182,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: "invalid",
-				Amount:          math.NewInt(1000),
+				Amount:          math.NewInt(1000000000000000),
 				Memo:            "Test payment",
 			},
 			expectErr: true,
@@ -193,7 +193,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: validSender,
-				Amount:          math.NewInt(1000),
+				Amount:          math.NewInt(1000000000000000),
 				Memo:            "Test payment",
 			},
 			expectErr: true,
@@ -215,7 +215,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: validMerchant,
-				Amount:          math.NewInt(1000),
+				Amount:          math.NewInt(1000000000000000),
 				Memo:            string(make([]byte, 257)), // 257 characters
 			},
 			expectErr: true,
@@ -237,7 +237,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 }
 
 func TestMsgCreateVaultValidateBasic(t *testing.T) {
-	validAddress := "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux"
+	validAddress := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
 
 	tests := []struct {
 		name      string
@@ -249,7 +249,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "valid message",
 			msg: &types.MsgCreateVault{
 				Sender:       validAddress,
-				Amount:       math.NewInt(5000),
+				Amount:       math.NewInt(1000000000000000000), // 1 VITA minimum
 				LockDuration: 1000,
 			},
 			expectErr: false,
@@ -258,7 +258,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "invalid sender address",
 			msg: &types.MsgCreateVault{
 				Sender:       "invalid",
-				Amount:       math.NewInt(5000),
+				Amount:       math.NewInt(1000000000000000000),
 				LockDuration: 1000,
 			},
 			expectErr: true,
@@ -278,7 +278,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "zero lock duration",
 			msg: &types.MsgCreateVault{
 				Sender:       validAddress,
-				Amount:       math.NewInt(5000),
+				Amount:       math.NewInt(1000000000000000000),
 				LockDuration: 0,
 			},
 			expectErr: true,
@@ -288,8 +288,8 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "lock duration too long",
 			msg: &types.MsgCreateVault{
 				Sender:       validAddress,
-				Amount:       math.NewInt(5000),
-				LockDuration: 10_000_000, // More than max
+				Amount:       math.NewInt(1000000000000000000),
+				LockDuration: 10_000_000, // More than max (5.256M)
 			},
 			expectErr: true,
 			errMsg:    "lock duration cannot exceed",
@@ -310,9 +310,9 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 }
 
 func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
-	validSender := "cosmos1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5"
-	validRecipient1 := "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux"
-	validRecipient2 := "cosmos1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5"
+	validSender := "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4"
+	validRecipient1 := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
+	validRecipient2 := "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4"
 
 	tests := []struct {
 		name      string
@@ -326,7 +326,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1, validRecipient2},
-				Amounts:    []math.Int{math.NewInt(100), math.NewInt(200)},
+				Amounts:    []math.Int{math.NewInt(1000000000000000), math.NewInt(2000000000000000)}, // 0.001 VITA min
 			},
 			expectErr: false,
 		},
@@ -336,7 +336,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     "invalid",
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1},
-				Amounts:    []math.Int{math.NewInt(100)},
+				Amounts:    []math.Int{math.NewInt(1000000000000000)},
 			},
 			expectErr: true,
 			errMsg:    "invalid sender address",
@@ -347,7 +347,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "",
 				Recipients: []string{validRecipient1},
-				Amounts:    []math.Int{math.NewInt(100)},
+				Amounts:    []math.Int{math.NewInt(1000000000000000)},
 			},
 			expectErr: true,
 			errMsg:    "pool ID cannot be empty",
@@ -369,7 +369,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1, validRecipient2},
-				Amounts:    []math.Int{math.NewInt(100)}, // Only 1 amount for 2 recipients
+				Amounts:    []math.Int{math.NewInt(1000000000000000)}, // Only 1 amount for 2 recipients
 			},
 			expectErr: true,
 			errMsg:    "amounts list must match recipients list length",
@@ -380,7 +380,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{"invalid"},
-				Amounts:    []math.Int{math.NewInt(100)},
+				Amounts:    []math.Int{math.NewInt(1000000000000000)},
 			},
 			expectErr: true,
 			errMsg:    "invalid recipient address",
@@ -391,7 +391,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1, validRecipient1},
-				Amounts:    []math.Int{math.NewInt(100), math.NewInt(200)},
+				Amounts:    []math.Int{math.NewInt(1000000000000000), math.NewInt(2000000000000000)},
 			},
 			expectErr: true,
 			errMsg:    "duplicate recipient address",
@@ -423,7 +423,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 }
 
 func TestGetSigners(t *testing.T) {
-	validAddress := "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux"
+	validAddress := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
 	expectedSigners := []sdk.AccAddress{sdk.MustAccAddressFromBech32(validAddress)}
 
 	tests := []struct {

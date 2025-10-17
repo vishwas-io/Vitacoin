@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 type msgServer struct {
@@ -85,11 +85,14 @@ func (ms msgServer) RegisterMerchant(ctx context.Context, msg *types.MsgRegister
 	// TODO Phase 3: Collect registration fee + stake amount from sender
 	// For now, just create the merchant record
 
+	// Calculate merchant tier based on stake amount
+	tier := ms.Keeper.calculateMerchantTier(msg.StakeAmount)
+
 	// Create merchant
 	merchant := types.Merchant{
 		Address:            msg.Sender,
 		BusinessName:       msg.BusinessName,
-		Tier:               types.MerchantTierBronze, // Start at bronze
+		Tier:               tier, // Automatically calculated from stake
 		StakeAmount:        msg.StakeAmount,
 		RegistrationHeight: sdk.UnwrapSDKContext(ctx).BlockHeight(),
 		IsActive:           true,
@@ -143,10 +146,10 @@ func (ms msgServer) UpdateMerchant(ctx context.Context, msg *types.MsgUpdateMerc
 		}
 		// TODO Phase 3: Collect additional stake from sender
 		merchant.StakeAmount = merchant.StakeAmount.Add(msg.AdditionalStake)
-		
-		// Upgrade tier based on new stake amount
-		merchant.Tier = ms.calculateMerchantTier(merchant.StakeAmount)
 	}
+	
+	// Always recalculate tier based on current stake amount (whether updated or not)
+	merchant.Tier = ms.Keeper.calculateMerchantTier(merchant.StakeAmount)
 
 	// Update last activity time
 	// TODO: Add LastActivityTime field to Merchant struct
@@ -233,9 +236,28 @@ func (ms msgServer) CreatePayment(ctx context.Context, msg *types.MsgCreatePayme
 		return nil, fmt.Errorf("failed to store payment: %w", err)
 	}
 
-	// TODO Phase 3: Escrow payment amount from sender
+	// Phase 3: Escrow payment amount from sender to module account
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sender address for escrow: %w", err)
+	}
+	
+	if err := ms.Keeper.EscrowPaymentFunds(ctx, senderAddr, msg.Amount); err != nil {
+		return nil, fmt.Errorf("failed to escrow payment funds: %w", err)
+	}
 
-	ms.Keeper.Logger().Info("payment created",
+	// Emit payment created event
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypePaymentCreated,
+			sdk.NewAttribute(types.AttributeKeyPaymentID, paymentID),
+			sdk.NewAttribute(types.AttributeKeyPayer, msg.Sender),
+			sdk.NewAttribute(types.AttributeKeyMerchant, msg.MerchantAddress),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
+		),
+	)
+
+	ms.Keeper.Logger().Info("payment created and escrowed",
 		"id", paymentID,
 		"payer", msg.Sender,
 		"merchant", msg.MerchantAddress,
@@ -290,22 +312,33 @@ func (ms msgServer) CompletePayment(ctx context.Context, msg *types.MsgCompleteP
 		return nil, fmt.Errorf("failed to update payment: %w", err)
 	}
 
-	// Update merchant stats
+	// Phase 3: Release escrowed funds to merchant (minus protocol fees)
+	merchantAddr, err := sdk.AccAddressFromBech32(payment.ToAddress)
+	if err != nil {
+		return nil, fmt.Errorf("invalid merchant address: %w", err)
+	}
+	
+	feeAmount, netAmount, err := ms.Keeper.ReleasePaymentFunds(ctx, merchantAddr, payment.Amount, msg.PaymentId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to release payment funds: %w", err)
+	}
+
+	// Update merchant stats with gross amount (before fees)
 	merchant, err := ms.Keeper.GetMerchant(ctx, payment.ToAddress)
 	if err == nil {
 		merchant.TotalTransactions++
-		merchant.TotalVolume = merchant.TotalVolume.Add(payment.Amount)
+		merchant.TotalVolume = merchant.TotalVolume.Add(payment.Amount) // Track gross volume
 		// TODO: Add LastActivityTime field to Merchant struct
 		// merchant.LastActivityTime = sdkCtx.BlockTime().Unix()
 		ms.Keeper.SetMerchant(ctx, merchant)
 	}
 
-	// TODO Phase 3: Release escrowed funds to merchant (minus fees)
-
-	ms.Keeper.Logger().Info("payment completed",
+	ms.Keeper.Logger().Info("payment completed with fees",
 		"id", msg.PaymentId,
 		"merchant", msg.Sender,
-		"amount", payment.Amount.String(),
+		"gross_amount", payment.Amount.String(),
+		"protocol_fee", feeAmount.String(),
+		"net_amount", netAmount.String(),
 	)
 
 	return &types.MsgCompletePaymentResponse{}, nil
@@ -366,12 +399,23 @@ func (ms msgServer) RefundPayment(ctx context.Context, msg *types.MsgRefundPayme
 		ms.Keeper.SetMerchant(ctx, merchant)
 	}
 
-	// TODO Phase 3: Process refund transfer back to payer
+	// Phase 3: NOTE - Refund implementation
+	// For completed payments, funds have already been settled (merchant received net, fees distributed)
+	// Refunds should be a separate merchant-to-customer transfer, not unwinding the original payment
+	// Merchant needs to have sufficient balance to refund the customer
+	// This ensures protocol fees are not reversed (fees were earned for processing the original payment)
+	
+	// Future enhancement: Implement actual refund transfer
+	// merchantAddr, _ := sdk.AccAddressFromBech32(payment.ToAddress)
+	// payerAddr, _ := sdk.AccAddressFromBech32(payment.FromAddress)
+	// refundCoins := sdk.NewCoins(sdk.NewCoin("avita", payment.Amount))
+	// err = ms.Keeper.bankKeeper.SendCoins(ctx, merchantAddr, payerAddr, refundCoins)
 
-	ms.Keeper.Logger().Info("payment refunded",
+	ms.Keeper.Logger().Info("payment marked as refunded",
 		"id", msg.PaymentId,
 		"merchant", msg.Sender,
 		"reason", msg.Reason,
+		"note", "refund transfer should be processed by merchant directly",
 	)
 
 	return &types.MsgRefundPaymentResponse{}, nil
@@ -414,6 +458,8 @@ func (ms msgServer) CreateVault(ctx context.Context, msg *types.MsgCreateVault) 
 		CreationHeight:   sdkCtx.BlockHeight(),
 		UnlockHeight:     unlockHeight,
 		RewardMultiplier: ms.Keeper.calculateRewardMultiplier(msg.LockDuration),
+		// TODO: Regenerate proto to include IsActive field for Vault
+		// IsActive:         true, // Vault is active when created
 		// TODO: Add fields for tracking withdrawal status and timestamps
 		// IsWithdrawn:   false,
 		// CreatedAt:     sdkCtx.BlockTime().Unix(),
@@ -459,10 +505,10 @@ func (ms msgServer) WithdrawVault(ctx context.Context, msg *types.MsgWithdrawVau
 		return nil, fmt.Errorf("only vault owner can withdraw")
 	}
 
-	// TODO: Check if already withdrawn when IsWithdrawn field is added
-	// TODO: Add IsWithdrawn field or use status to track withdrawn vaults
-	// if vault.IsWithdrawn {
-	//     return nil, fmt.Errorf("vault already withdrawn")
+	// TODO: Add IsActive field check when proto is regenerated
+	// Check if vault is still active
+	// if !vault.IsActive {
+	//     return nil, fmt.Errorf("vault is not active")
 	// }
 
 	// Check if vault is unlocked
@@ -475,11 +521,9 @@ func (ms msgServer) WithdrawVault(ctx context.Context, msg *types.MsgWithdrawVau
 	// Calculate rewards (simplified - TODO: implement proper reward calculation in Phase 4)
 	lockDuration := vault.UnlockHeight - vault.CreationHeight
 	rewards := ms.Keeper.calculateVaultRewards(vault.Amount, lockDuration)
-	// TODO: Add RewardAmount field to Vault struct
-	// vault.RewardAmount = rewards
-
-	// TODO: Add IsWithdrawn field to Vault struct to track withdrawal status
-	// vault.IsWithdrawn = true
+	
+	// TODO: Deactivate vault after withdrawal when proto is regenerated
+	// vault.IsActive = false
 
 	// Store updated vault
 	if err := ms.Keeper.SetVault(ctx, vault); err != nil {

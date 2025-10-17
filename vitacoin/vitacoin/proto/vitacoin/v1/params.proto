@@ -74,10 +74,58 @@ message Params {
   bool enable_instant_settlement = 10;
   
   // fee_burn_percent is the percentage of transaction fees that are burned (0-100)
-  // Implements deflationary tokenomics
+  // Implements deflationary tokenomics - default 25%
   string fee_burn_percent = 11 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
+  
+  // fee_validator_percent is the percentage of transaction fees sent to validators (0-100)
+  // Default 50% - sent to FeeCollector for distribution
+  string fee_validator_percent = 12 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // fee_treasury_percent is the percentage of transaction fees sent to treasury (0-100)
+  // Default 25% - controlled by governance
+  string fee_treasury_percent = 13 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // min_protocol_fee is the minimum protocol fee charged per payment (in avita)
+  // Default 0.001 VITA (1e15 avita) - prevents dust attacks
+  string min_protocol_fee = 14 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // max_protocol_fee is the maximum protocol fee charged per payment (in avita)
+  // Default 100 VITA (1e20 avita) - prevents accidental overpayment
+  string max_protocol_fee = 15 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_cap_supply is the target minimum supply (in avita) where burning stops
+  // Default 500M VITA (5e26 avita) - prevents over-deflation
+  string burn_cap_supply = 16 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // paused_fee_collection is an emergency flag to pause protocol fee collection
+  // Can only be set by governance
+  bool paused_fee_collection = 17;
+  
+  // paused_fee_distribution is an emergency flag to pause fee distribution
+  // Can only be set by governance
+  bool paused_fee_distribution = 18;
 }

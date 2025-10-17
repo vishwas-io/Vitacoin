@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package vitacoin.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/esspron/VITACOIN/x/vitacoin/types";
+
+// FeeAccumulator tracks accumulated fees for a specific time period
+message FeeAccumulator {
+  option (gogoproto.goproto_stringer) = false;
+  
+  // period_start is the start height of this accumulation period
+  int64 period_start = 1;
+  
+  // period_end is the end height of this accumulation period
+  int64 period_end = 2;
+  
+  // total_collected is the total protocol fees collected in this period
+  string total_collected = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // validator_share is the amount sent to validators via FeeCollector
+  string validator_share = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_share is the amount burned (destroyed)
+  string burn_share = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // treasury_share is the amount sent to treasury
+  string treasury_share = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // transaction_count is the number of fee-generating transactions
+  uint64 transaction_count = 7;
+  
+  // timestamp is when this period ended
+  google.protobuf.Timestamp timestamp = 8 [(gogoproto.stdtime) = true];
+}
+
+// FeeStatistics tracks cumulative fee statistics since genesis
+message FeeStatistics {
+  option (gogoproto.goproto_stringer) = false;
+  
+  // total_collected_all_time is cumulative fees collected since genesis
+  string total_collected_all_time = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_burned_all_time is cumulative amount burned since genesis
+  string total_burned_all_time = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_to_validators_all_time is cumulative sent to validators since genesis
+  string total_to_validators_all_time = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_to_treasury_all_time is cumulative sent to treasury since genesis
+  string total_to_treasury_all_time = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_transactions_all_time is cumulative transaction count since genesis
+  uint64 total_transactions_all_time = 5;
+  
+  // last_update_height is the last block height when stats were updated
+  int64 last_update_height = 6;
+  
+  // current_epoch is the current epoch number (1 epoch = 1 day of blocks)
+  int64 current_epoch = 7;
+}
+
+// SupplySnapshot tracks supply metrics at a specific point in time
+message SupplySnapshot {
+  option (gogoproto.goproto_stringer) = false;
+  
+  // height is the block height when this snapshot was taken
+  int64 height = 1;
+  
+  // timestamp is when this snapshot was taken
+  google.protobuf.Timestamp timestamp = 2 [(gogoproto.stdtime) = true];
+  
+  // total_supply is the total supply including all locked/vested tokens
+  string total_supply = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // circulating_supply is total minus locked/vested/module accounts
+  string circulating_supply = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // liquid_supply is circulating minus staked amount
+  string liquid_supply = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // bonded_supply is the amount currently staked
+  string bonded_supply = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burned_cumulative is cumulative burn up to this point
+  string burned_cumulative = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// BurnStats tracks burn mechanism statistics
+message BurnStats {
+  option (gogoproto.goproto_stringer) = false;
+  
+  // total_burned is the cumulative amount burned since genesis
+  string total_burned = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_rate_per_day is the average burn rate per day (in avita)
+  string burn_rate_per_day = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // current_supply is the current total supply after burns
+  string current_supply = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_cap_supply is the target minimum supply
+  string burn_cap_supply = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // remaining_to_cap is how much more can be burned before reaching cap
+  string remaining_to_cap = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_cap_reached indicates if burning has stopped due to cap
+  bool burn_cap_reached = 6;
+  
+  // last_burn_height is the last block height when tokens were burned
+  int64 last_burn_height = 7;
+}

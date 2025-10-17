@@ -12,6 +12,7 @@ const (
 	EventTypePaymentCompleted = "payment_completed"
 	EventTypePaymentRefunded  = "payment_refunded"
 	EventTypePaymentExpired   = "payment_expired"
+	EventTypePaymentSettled   = "payment_settled"
 
 	// Merchant events
 	EventTypeMerchantRegistered = "merchant_registered"
@@ -34,6 +35,18 @@ const (
 
 	// Module events
 	EventTypeParamsUpdated = "params_updated"
+	
+	// Phase 3: Fee & Treasury Events
+	EventTypeFeeDistribution     = "fee_distribution"
+	EventTypeFeeBurned           = "fee_burned"
+	EventTypeTreasuryDeposit     = "treasury_deposit"
+	EventTypeSupplySnapshot      = "supply_snapshot"
+	EventTypeBurnCapReached      = "burn_cap_reached"
+	EventTypeFeeCollectionPaused = "fee_collection_paused"
+	
+	// Phase 3 Task 3.4: Treasury Events
+	EventTypeTreasurySpent       = "treasury_spent"
+	EventTypeTreasuryProposal    = "treasury_proposal"
 )
 
 // Attribute keys for events
@@ -84,12 +97,39 @@ const (
 	AttributeKeyFeeAmount       = "fee_amount"
 	AttributeKeyValidatorShare  = "validator_share"
 	AttributeKeyBurnedAmount    = "burned_amount"
-	AttributeKeyTreasuryAmount  = "treasury_amount"
 
 	// General attributes
 	AttributeKeyHeight          = "height"
 	AttributeKeyBlockTime       = "block_time"
 	AttributeKeyModule          = "module"
+	
+	// Phase 3: Payment Settlement Attributes
+	AttributeKeyPaymentID      = "payment_id"
+	AttributeKeyPayer          = "payer"
+	AttributeKeyMerchant       = "merchant"
+	AttributeKeyGrossAmount    = "gross_amount"
+	AttributeKeyProtocolFee    = "protocol_fee"
+	AttributeKeyNetAmount      = "net_amount"
+	
+	// Phase 3: Fee Distribution Attributes
+	AttributeKeyTotalFees       = "total_fees"
+	AttributeKeyBurnAmount      = "burn_amount"
+	AttributeKeyValidatorAmount = "validator_amount"
+	AttributeKeyTreasuryAmount  = "treasury_amount"
+	AttributeKeyTransactionCount = "transaction_count"
+	
+	// Phase 3: Supply Tracking Attributes
+	AttributeKeyTotalSupply       = "total_supply"
+	AttributeKeyCirculatingSupply = "circulating_supply"
+	AttributeKeyLiquidSupply      = "liquid_supply"
+	AttributeKeyBondedSupply      = "bonded_supply"
+	AttributeKeyBurnedCumulative  = "burned_cumulative"
+	
+	// Phase 3 Task 3.4: Treasury Attributes
+	AttributeKeyProposalId        = "proposal_id"
+	AttributeKeyPurpose           = "purpose"
+	AttributeKeyTreasuryBalance   = "treasury_balance"
+	AttributeKeySpendingId        = "spending_id"
 )
 
 // CreateTransactionEvent is emitted when a new transaction is created.

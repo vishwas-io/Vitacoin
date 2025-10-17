@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 // Keeper of the vitacoin store
@@ -24,6 +24,10 @@ type Keeper struct {
 	
 	// the address capable of executing a MsgUpdateParams message (typically the gov module)
 	authority string
+	
+	// Phase 3: External keepers for fee distribution and treasury
+	bankKeeper    types.BankKeeper
+	accountKeeper types.AccountKeeper
 }
 
 // NewKeeper creates a new vitacoin Keeper instance with production-level validation
@@ -32,6 +36,8 @@ func NewKeeper(
 	storeService store.KVStoreService,
 	logger log.Logger,
 	authority string,
+	bankKeeper types.BankKeeper,
+	accountKeeper types.AccountKeeper,
 ) Keeper {
 	// Ensure that authority is a valid AccAddress
 	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
@@ -48,11 +54,22 @@ func NewKeeper(
 		panic("store service cannot be nil")
 	}
 
+	// Validate keepers
+	if bankKeeper == nil {
+		panic("bank keeper cannot be nil")
+	}
+	
+	if accountKeeper == nil {
+		panic("account keeper cannot be nil")
+	}
+
 	keeper := Keeper{
-		storeService: storeService,
-		cdc:          cdc,
-		logger:       logger.With("module", types.ModuleName),
-		authority:    authority,
+		storeService:  storeService,
+		cdc:           cdc,
+		logger:        logger.With("module", types.ModuleName),
+		authority:     authority,
+		bankKeeper:    bankKeeper,
+		accountKeeper: accountKeeper,
 	}
 
 	return keeper
@@ -520,14 +537,27 @@ func (k Keeper) processTimeBasedOperations(ctx sdk.Context) error {
 }
 
 // processFeeDistribution distributes collected fees according to the module parameters
+// Phase 3: Implements 50/25/25 split (validators/burn/treasury)
 func (k Keeper) processFeeDistribution(ctx sdk.Context) error {
-	// Implementation will be added in later tasks
-	// This is where we'll implement the 50/25/25 fee split:
-	// - 50% to validators (staking module)
-	// - 25% to burn address
-	// - 25% to treasury
-	
 	k.logger.Debug("Processing fee distribution", "height", ctx.BlockHeight())
+	
+	// Distribute protocol fees collected during this block
+	if err := k.DistributeProtocolFees(ctx); err != nil {
+		return fmt.Errorf("failed to distribute protocol fees: %w", err)
+	}
+	
+	// Create supply snapshot once per epoch (daily)
+	currentEpoch := k.CalculateEpoch(ctx)
+	lastEpoch := int64(0)
+	
+	// Check if we need to create a snapshot (once per epoch)
+	if currentEpoch > lastEpoch {
+		if err := k.CreateSupplySnapshot(ctx); err != nil {
+			k.logger.Error("failed to create supply snapshot", "error", err)
+			// Don't fail the entire block for snapshot errors
+		}
+	}
+	
 	return nil
 }
 

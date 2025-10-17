@@ -19,9 +19,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin"
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/keeper"
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/keeper"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 type ModuleTestSuite struct {

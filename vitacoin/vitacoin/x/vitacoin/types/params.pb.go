@@ -52,8 +52,29 @@ type Params struct {
 	// enable_instant_settlement defines whether instant settlement is enabled for payments
 	EnableInstantSettlement bool `protobuf:"varint,10,opt,name=enable_instant_settlement,json=enableInstantSettlement,proto3" json:"enable_instant_settlement,omitempty"`
 	// fee_burn_percent is the percentage of transaction fees that are burned (0-100)
-	// Implements deflationary tokenomics
+	// Implements deflationary tokenomics - default 25%
 	FeeBurnPercent cosmossdk_io_math.LegacyDec `protobuf:"bytes,11,opt,name=fee_burn_percent,json=feeBurnPercent,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"fee_burn_percent"`
+	// fee_validator_percent is the percentage of transaction fees sent to validators (0-100)
+	// Default 50% - sent to FeeCollector for distribution
+	FeeValidatorPercent cosmossdk_io_math.LegacyDec `protobuf:"bytes,12,opt,name=fee_validator_percent,json=feeValidatorPercent,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"fee_validator_percent"`
+	// fee_treasury_percent is the percentage of transaction fees sent to treasury (0-100)
+	// Default 25% - controlled by governance
+	FeeTreasuryPercent cosmossdk_io_math.LegacyDec `protobuf:"bytes,13,opt,name=fee_treasury_percent,json=feeTreasuryPercent,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"fee_treasury_percent"`
+	// min_protocol_fee is the minimum protocol fee charged per payment (in avita)
+	// Default 0.001 VITA (1e15 avita) - prevents dust attacks
+	MinProtocolFee cosmossdk_io_math.Int `protobuf:"bytes,14,opt,name=min_protocol_fee,json=minProtocolFee,proto3,customtype=cosmossdk.io/math.Int" json:"min_protocol_fee"`
+	// max_protocol_fee is the maximum protocol fee charged per payment (in avita)
+	// Default 100 VITA (1e20 avita) - prevents accidental overpayment
+	MaxProtocolFee cosmossdk_io_math.Int `protobuf:"bytes,15,opt,name=max_protocol_fee,json=maxProtocolFee,proto3,customtype=cosmossdk.io/math.Int" json:"max_protocol_fee"`
+	// burn_cap_supply is the target minimum supply (in avita) where burning stops
+	// Default 500M VITA (5e26 avita) - prevents over-deflation
+	BurnCapSupply cosmossdk_io_math.Int `protobuf:"bytes,16,opt,name=burn_cap_supply,json=burnCapSupply,proto3,customtype=cosmossdk.io/math.Int" json:"burn_cap_supply"`
+	// paused_fee_collection is an emergency flag to pause protocol fee collection
+	// Can only be set by governance
+	PausedFeeCollection bool `protobuf:"varint,17,opt,name=paused_fee_collection,json=pausedFeeCollection,proto3" json:"paused_fee_collection,omitempty"`
+	// paused_fee_distribution is an emergency flag to pause fee distribution
+	// Can only be set by governance
+	PausedFeeDistribution bool `protobuf:"varint,18,opt,name=paused_fee_distribution,json=pausedFeeDistribution,proto3" json:"paused_fee_distribution,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -105,6 +126,20 @@ func (m *Params) GetEnableMerchantLoyalty() bool {
 func (m *Params) GetEnableInstantSettlement() bool {
 	if m != nil {
 		return m.EnableInstantSettlement
+	}
+	return false
+}
+
+func (m *Params) GetPausedFeeCollection() bool {
+	if m != nil {
+		return m.PausedFeeCollection
+	}
+	return false
+}
+
+func (m *Params) GetPausedFeeDistribution() bool {
+	if m != nil {
+		return m.PausedFeeDistribution
 	}
 	return false
 }

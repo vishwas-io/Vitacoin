@@ -19,8 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/keeper"
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/keeper"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 type KeeperTestSuite struct {
@@ -38,6 +38,12 @@ func TestKeeperTestSuite(t *testing.T) {
 }
 
 func (suite *KeeperTestSuite) SetupTest() {
+	// Initialize bech32 config FIRST
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("vita", "vitapub")
+	config.SetBech32PrefixForValidator("vitavaloper", "vitavaloperpub")
+	config.SetBech32PrefixForConsensusNode("vitavalcons", "vitavalconspub")
+	
 	// Create codec
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	types.RegisterInterfaces(interfaceRegistry)
@@ -85,7 +91,7 @@ func (suite *KeeperTestSuite) TestSetGetParams() {
 }
 
 func (suite *KeeperTestSuite) TestMerchantCRUD() {
-	address := "vita1test1merchant"
+	address := "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f"
 	
 	// Test merchant doesn't exist
 	exists, err := suite.keeper.HasMerchant(suite.ctx, address)
@@ -145,8 +151,8 @@ func (suite *KeeperTestSuite) TestPaymentCRUD() {
 	// Create payment
 	payment := types.Payment{
 		Id:             paymentID,
-		FromAddress:    "vita1sender",
-		ToAddress:      "vita1merchant",
+		FromAddress:    "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
+		ToAddress:      "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4",
 		Amount:         math.NewInt(1000),
 		Status:         types.PaymentStatusPending,
 		CreationHeight: suite.ctx.BlockHeight(),
@@ -195,7 +201,7 @@ func (suite *KeeperTestSuite) TestVaultCRUD() {
 	// Create vault
 	vault := types.Vault{
 		Id:               vaultID,
-		Owner:            "vita1owner",
+		Owner:            "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
 		Amount:           math.NewInt(5000),
 		LockDuration:     1000,
 		CreationHeight:   suite.ctx.BlockHeight(),
@@ -245,7 +251,7 @@ func (suite *KeeperTestSuite) TestRewardPoolCRUD() {
 	// Create reward pool
 	pool := types.RewardPool{
 		Id:                 poolID,
-		MerchantAddress:    "vita1merchant",
+		MerchantAddress:    "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
 		TotalRewards:       math.NewInt(10000),
 		DistributedRewards: math.ZeroInt(),
 		StartHeight:        suite.ctx.BlockHeight(),
@@ -286,7 +292,7 @@ func (suite *KeeperTestSuite) TestRewardPoolCRUD() {
 func (suite *KeeperTestSuite) TestGenesisInitAndExport() {
 	// Create initial state
 	merchant := types.Merchant{
-		Address:           "vita1merchant",
+		Address:           "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
 		BusinessName:      "Genesis Merchant",
 		Tier:              types.MerchantTierGold,
 		StakeAmount:       math.NewInt(1000000),
@@ -297,8 +303,8 @@ func (suite *KeeperTestSuite) TestGenesisInitAndExport() {
 
 	payment := types.Payment{
 		Id:          "genesis-payment",
-		FromAddress: "vita1sender",
-		ToAddress:   "vita1merchant",
+		FromAddress: "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
+		ToAddress:   "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4",
 		Amount:      math.NewInt(1000),
 		Status:      types.PaymentStatusCompleted,
 	}

@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/esspron/VITACOIN/vitacoin/vitacoin/x/vitacoin/types"
+	"github.com/vitacoin/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
 func TestAdvancedValidation_BusinessName(t *testing.T) {
@@ -111,7 +111,7 @@ func TestAdvancedValidation_PaymentAmount(t *testing.T) {
 		},
 		{
 			name:        "minimum valid amount",
-			amount:      math.NewInt(1e12), // 1 micro-VITA
+			amount:      math.NewInt(1e15), // 0.001 VITA (updated minimum)
 			expectError: false,
 		},
 		{
@@ -128,13 +128,13 @@ func TestAdvancedValidation_PaymentAmount(t *testing.T) {
 		},
 		{
 			name:        "amount too small",
-			amount:      math.NewInt(1e11), // Less than minimum
+			amount:      math.NewInt(1e14), // Less than minimum (1e15)
 			expectError: true,
 			errorMsg:    "must be at least",
 		},
 		{
 			name:        "stake amount too large",
-			amount:      math.NewInt(1000000000).Mul(math.NewInt(1000000000)).Mul(math.NewInt(1000)).Add(math.NewInt(1)),
+			amount:      math.NewInt(1000000).Mul(math.NewInt(1000000000000000000)).Add(math.NewInt(1)), // > 1M VITA
 			expectError: true,
 			errorMsg:    "maximum allowed",
 		},
@@ -186,7 +186,7 @@ func TestAdvancedValidation_VaultAmount(t *testing.T) {
 		},
 		{
 			name:        "amount too large",
-			amount:      math.NewInt(1000000000).Mul(math.NewInt(1000000000)).Mul(math.NewInt(1000)).Add(math.NewInt(1)),
+			amount:      math.NewInt(10000000).Mul(math.NewInt(1000000000000000000)).Add(math.NewInt(1)), // > 10M VITA
 			expectError: true,
 			errorMsg:    "maximum allowed",
 		},
