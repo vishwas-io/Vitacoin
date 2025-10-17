@@ -1,701 +1,327 @@
-# VITACOIN Ecosystem
+# 🪙 VITACOIN - The Cryptocurrency Blockchain
 
-<div align="center">
+This folder contains the **VITACOIN blockchain** - the cryptocurrency that powers the entire ecosystem.
 
-![VITACOIN Logo](https://via.placeholder.com/150x150.png?text=VITACOIN)
+## What is This?
 
-**Cryptocurrency + Payment Network for the Future of Global Transactions**
+**VITACOIN** is a Cosmos SDK-based blockchain that provides:
+- **VITA Token**: The native cryptocurrency
+- **Validators**: Network security through Proof-of-Stake
+- **Governance**: On-chain decision making
+- **Staking**: Earn rewards for securing the network
+- **IBC**: Cross-chain interoperability
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/go-1.21+-blue.svg)](https://golang.org)
-[![Cosmos SDK](https://img.shields.io/badge/cosmos--sdk-v0.50-blue.svg)](https://github.com/cosmos/cosmos-sdk)
+**Think of it as**: The "money layer" - like Bitcoin or Ethereum, but optimized for payments.
 
-[Documentation](#documentation) • [VITACOIN](#-vitacoin---the-cryptocurrency) • [VITAPAY](#-vitapay---the-payment-network) • [Quick Start](#quick-start)
-
-</div>
-
----
-
-## � What is This?
-
-This repository contains **TWO interconnected projects** that work together to revolutionize global payments:
-
-### 🪙 **VITACOIN** - The Cryptocurrency
-A decentralized blockchain cryptocurrency (like Bitcoin or Ethereum) built on Cosmos SDK. It's the digital money itself.
-
-### 💳 **VITAPAY** - The Payment Network  
-A payment gateway and wallet system (like PayPal or Razorpay) that makes it easy to send and receive **VITACOIN** for e-commerce and peer-to-peer transactions.
-
----
-
-## 🔗 How They Work Together
+## Relationship to VITAPAY
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    THE COMPLETE SYSTEM                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  VITACOIN (The Currency)                                     │
-│  ├─ Blockchain network                                       │
-│  ├─ VITA tokens                                             │
-│  ├─ Validators securing network                             │
-│  └─ Decentralized ledger                                    │
-│        │                                                     │
-│        │ Powers                                              │
-│        ▼                                                     │
-│  VITAPAY (The Payment System)                               │
-│  ├─ Mobile wallet app                                       │
-│  ├─ Payment gateway for merchants                           │
-│  ├─ QR code payments                                        │
-│  ├─ Merchant APIs                                           │
-│  └─ User-friendly interface                                 │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-
-Example:
-1. VITACOIN blockchain creates and manages VITA tokens
-2. User buys VITA tokens
-3. User stores VITA in VITAPAY wallet app
-4. Merchant integrates VITAPAY payment gateway
-5. Customer pays with VITA via VITAPAY at checkout
-6. Transaction recorded on VITACOIN blockchain
+VITAPAY (payment network)
+    ↓ uses
+VITACOIN (this blockchain)
 ```
 
----
+VITAPAY is the user-friendly payment app built ON TOP OF this blockchain. This folder contains the underlying blockchain infrastructure.
 
-## 📁 Repository Structure
-
-This is a **monorepo** containing both projects for easier development:
+## What's In This Folder?
 
 ```
-vitacoin/  (this repository)
-│
-├── README.md              # This file - ecosystem overview
-│
-├── docs/                  # 📚 All documentation
-│   ├── VITACOIN.md       # Cryptocurrency guide
-│   ├── FOLDER_STRUCTURE.md  # Repository organization
-│   └── project/
-│       ├── VITAPAY.md    # Payment network guide
-│       └── MOBILE_APP.md # Wallet app specs
-│
-├── vitacoin/             # 🪙 VITACOIN BLOCKCHAIN
-│   ├── README.md         # Blockchain-specific docs
-│   ├── cmd/vitacoind/    # Node software
-│   ├── x/vitacoin/       # Custom modules
-│   └── proto/            # Protocol buffers
-│
-├── vitapay/              # 💳 VITAPAY PAYMENT NETWORK
-│   ├── README.md         # Payment network docs
-│   ├── mobile-wallet/    # Customer mobile app
-│   ├── payment-gateway/  # Merchant payment API
-│   ├── merchant-dashboard/  # Web portal
-│   └── shared/           # Shared SDK
-│
-├── shared/               # Shared utilities
-└── scripts/              # Build scripts
+vitacoin/
+├── README.md          # This file
+├── app/              # Blockchain application setup
+├── cmd/              # vitacoind binary (node software)
+├── proto/            # Protocol buffer definitions
+├── x/                # Custom Cosmos SDK modules
+├── testutil/         # Testing utilities
+├── build/            # Compiled binaries
+├── Makefile          # Build commands
+├── config.yml        # Chain configuration
+└── buf.yaml          # Protobuf build config
 ```
 
-**📖 [Complete Folder Structure Guide →](docs/FOLDER_STRUCTURE.md)**
+## Quick Start
 
----
+### Prerequisites
+- Go 1.21 or higher
+- Make
+- Protocol Buffers compiler
 
-## 🪙 VITACOIN - The Cryptocurrency
-
-**What it is:** A blockchain-based cryptocurrency token
-
-**Purpose:** The actual digital money that people send and receive
-
-**Technology:** Built on Cosmos SDK with Proof-of-Stake consensus
-
-**Location in Repo:** `vitacoin/` folder
-
-### Key Features
-- **Digital Currency**: VITA tokens for transactions
-- **Decentralized**: No central authority controls it
-- **Fast Transactions**: ~5 second finality
-- **Low Fees**: 0.1% transaction fee
-- **Secure**: Cryptographically protected
-- **Staking**: Earn rewards by validating
-- **Cross-Chain Ready**: IBC enabled for interoperability
-
-### Token Economics
-- **Symbol**: VITA
-- **Total Supply**: 1,000,000,000 VITA (1 Billion)
-- **Decimals**: 18
-- **Smallest Unit**: uvita
-
-### Fee Distribution (On-Chain & Transparent)
-Every 0.1% transaction fee is split:
-- **50%** → Validators (secure the network)
-- **25%** → Burned (reduces supply, increases value)
-- **25%** → Treasury (development & ecosystem)
-
-**For:** Validators, investors, blockchain developers, crypto traders
-
-**📂 Code Location:** `vitacoin/` folder
-
-[📖 Full VITACOIN Documentation →](./docs/VITACOIN.md)  
-[🔨 Blockchain README →](./vitacoin/README.md)
-
----
-
-## 💳 VITAPAY - The Payment Network
-
-**What it is:** A user-friendly payment gateway and wallet system
-
-**Purpose:** Makes it easy for anyone to use VITACOIN for everyday payments
-
-**Technology:** Mobile apps, payment APIs, merchant tools
-
-**Location in Repo:** `vitapay/` folder
-
-### Key Features
-
-#### 📱 Mobile Wallet App (VITAPAY Wallet)
-- Send & receive VITA tokens
-- QR code scanning for payments
-- Address book (save contacts)
-- Transaction history
-- Biometric security (fingerprint/face ID)
-- Real-time balance
-- iOS & Android
-
-**📂 Code:** `vitapay/mobile-wallet/`
-
-#### 🏪 Merchant Payment Gateway
-- Accept VITA payments on your website
-- Generate payment QR codes
-- "Open VITAPAY App" checkout button
-- Webhook notifications
-- Merchant dashboard (coming soon)
-- REST API for developers
-
-**📂 Code:** `vitapay/payment-gateway/`
-
-#### 💰 For Merchants
-- **Save 97%** on payment fees (0.1% vs 2-3%)
-- **Instant settlement** (5 seconds vs 2-7 days)
-- **Global reach** (accept from anywhere)
-- **No chargebacks** (blockchain finality)
-- **Complete transparency** (track all fees on-chain)
-
-#### 👤 For Customers
-- **Simple payments** (scan QR code)
-- **Fast** (transactions in seconds)
-- **Secure** (you control your keys)
-- **Private** (no card data shared)
-- **Low fees** (0.1%)
-
-**For:** Online merchants, e-commerce stores, SaaS businesses, everyday users
-
-[📖 Full VITAPAY Documentation →](./docs/project/VITAPAY.md)
-
----
-
-## 🎯 The Complete Picture
-
-### Think of it This Way:
-
-**VITACOIN** = Like having gold (the valuable asset)  
-**VITAPAY** = Like having a wallet and payment system to easily use that gold
-
-**Or in familiar terms:**
-
-| What | VITACOIN | VITAPAY |
-|------|----------|---------|
-| **Comparable To** | Bitcoin, Ethereum | PayPal, Razorpay, Stripe |
-| **What It Is** | The cryptocurrency | The payment processor |
-| **Who Built It** | Blockchain on Cosmos | Apps and APIs |
-| **Who Uses It** | Validators, investors | Merchants, customers |
-| **Purpose** | Store of value, currency | Easy payment experience |
-| **Technology** | Blockchain (Go) | Mobile app (React Native), APIs |
-
-### Why Both Are Needed
-
-❌ **VITACOIN alone:** You'd need to understand blockchain, use command-line tools, manage complex addresses
-  
-✅ **VITACOIN + VITAPAY:** Simple app, scan QR code, done! (But still powered by decentralized blockchain)
-
----
-
-## 🚀 Quick Start
-
-### For Developers - Run VITACOIN Blockchain
+### Build the Blockchain
 
 ```bash
-# Clone repository
-git clone https://github.com/esspron/vitacoin.git
-cd vitacoin
+# Install dependencies
+make install
 
-# Build VITACOIN blockchain
-cd vitacoin
-go mod tidy
+# Build the node software
 make build
 
-# Initialize node
-./build/vitacoind init mynode --chain-id vitacoin-1
+# The binary will be in ./build/vitacoind
+```
 
-# Start blockchain
+### Run a Local Node
+
+```bash
+# Initialize a local node
+./build/vitacoind init mynode --chain-id vitacoin-local
+
+# Start the node
 ./build/vitacoind start
 ```
 
-[Full blockchain setup guide →](./vitacoin/README.md)
-
-### For Users - Use VITAPAY Wallet
+### Run Tests
 
 ```bash
-# Download VITAPAY mobile app
-# iOS: App Store (coming soon)
-# Android: Play Store (coming soon)
-
-# Or run development version
-cd vitapay/mobile-wallet
-npm install
-npm run ios  # or npm run android
-```
-
-[Full VITAPAY setup guide →](./vitapay/README.md)
-
-### For Merchants - Integrate VITAPAY
-
-```javascript
-// Accept VITA payments on your website
-const vitapay = require('vitapay-sdk');
-
-// Generate payment request
-const payment = await vitapay.createPayment({
-  amount: 100,  // 100 VITA
-  orderId: 'ORDER-123',
-  returnUrl: 'https://yourstore.com/success'
-});
-
-// Show QR code to customer
-console.log(payment.qrCode);
-console.log(payment.deepLink);
-```
-
-[Merchant integration guide →](./docs/project/VITAPAY.md#merchant-integration)
-
----
-
-## ✨ Core Features
-
-### 💸 Payment Infrastructure
-**The heart of VITACOIN**
-- Instant peer-to-peer transfers
-- QR code-based checkout
-- Mobile wallet app
-- Address book for saved contacts
-- Transaction success/error handling
-- Real-time balance updates
-
-### 🔒 Simple Staking
-Earn rewards while holding VITA:
-- Stake tokens to secure the network
-- Earn passive income on holdings
-- Flexible staking (stake/unstake anytime)
-- Rewards distributed automatically
-
-### 🔥 Fee Transparency
-Every transaction fee (0.1%) is split transparently:
-- **50%** → Validators (network security)
-- **25%** → Burned (reduces supply, increases scarcity)
-- **25%** → Treasury (development & growth)
-
-All fees are tracked on-chain and verifiable in real-time.
-
-### 🌐 Cross-Chain Ready
-IBC Integration for future expansion:
-- Bridge to other Cosmos chains
-- Use other cryptocurrencies as intermediates
-- Multi-chain compatibility
-- Future fiat on/off ramps via crypto bridges
-
-### 🏛️ Community Governance
-Decentralized decision making:
-- Token holders vote on proposals
-- Transparent on-chain voting
-- Community-driven development
-- Treasury spending controlled by governance
-
-### � Mobile Wallet App
-Complete payment solution:
-- Send & receive VITA tokens
-- QR code scanning
-- Save addresses (like contacts)
-- Transaction history
-- Real-time balance
-- Secure & non-custodial
-- Biometric authentication
-
-[Mobile App Specs →](docs/project/MOBILE_APP.md)
-
----
-
-## 🏗️ Repository Structure
-
-This monorepo contains both VITACOIN and VITAPAY:
-
-```
-vitacoin/  (this repository)
-│
-├── README.md                    # This file - ecosystem overview
-│
-├── docs/                        # Documentation
-│   ├── README.md               # Docs index
-│   ├── VITACOIN.md             # Cryptocurrency documentation
-│   ├── project/
-│   │   ├── VITAPAY.md          # Payment network documentation
-│   │   ├── MOBILE_APP.md       # VITAPAY Wallet specs
-│   │   └── ...
-│   └── architecture/
-│
-├── vitacoin/                    # 🪙 THE CRYPTOCURRENCY
-│   ├── README.md               # VITACOIN-specific guide
-│   ├── proto/                  # Protocol buffers
-│   ├── x/vitacoin/            # Blockchain module
-│   ├── app/                    # Application
-│   ├── cmd/vitacoind/         # Node binary
-│   ├── go.mod                  # Go dependencies
-│   └── Makefile               # Build commands
-│
-├── vitapay/                     # 💳 THE PAYMENT NETWORK
-│   ├── README.md               # VITAPAY-specific guide
-│   │
-│   ├── mobile-wallet/          # 📱 VITAPAY Wallet App
-│   │   ├── src/               # React Native source
-│   │   ├── ios/               # iOS build
-│   │   ├── android/           # Android build
-│   │   └── package.json
-│   │
-│   ├── payment-gateway/        # 🏪 Merchant Payment API
-│   │   ├── api/               # REST API
-│   │   ├── webhooks/          # Webhook handlers
-│   │   ├── qr-generator/      # QR code generation
-│   │   └── go.mod
-│   │
-│   └── merchant-dashboard/     # 📊 Merchant Portal (future)
-│       └── ...
-│
-├── shared/                      # Shared utilities
-│   └── types/                  # Common types
-│
-└── scripts/                     # Build & deployment scripts
-    ├── build-vitacoin.sh
-    ├── build-vitapay.sh
-    └── test-all.sh
-```
-
-**Why one repository?**
-- Easier development initially (tightly coupled)
-- Shared types and utilities
-- Faster iteration and testing
-- Can split later if needed
-
----
-
-## 📊 Token Economics (VITACOIN)
-
-### Supply
-- **Total Supply**: 1,000,000,000 VITA (1 Billion)
-- **Decimals**: 18
-- **Symbol**: VITA
-- **Base Unit**: uvita (1 VITA = 10^18 uvita)
-
-### Distribution
-| Allocation | Amount | Percentage | Purpose |
-|------------|--------|------------|---------|
-| Staking Rewards | 400M VITA | 40% | Validator & delegator rewards over 10 years |
-| Genesis Allocation | 300M VITA | 30% | Team, advisors, early supporters (vested) |
-| Ecosystem Development | 200M VITA | 20% | Grants, partnerships, VITAPAY development |
-| Governance Reserve | 100M VITA | 10% | Community-controlled treasury |
-
-### Transaction Fees
-- **Fee Rate**: 0.1% per transaction
-- **Fee Distribution** (transparent & on-chain):
-  - 50% → Validators (network security rewards)
-  - 25% → Burned (permanent supply reduction)
-  - 25% → Treasury (development & ecosystem growth)
-
-### Inflation & Staking
-- **Initial Rate**: 7% per year (for staking rewards)
-- **Target Bonded**: 67% of supply staked
-- **Range**: 3% - 10% (dynamic based on staking participation)
-- **Adjustment**: Monthly recalculation
-
-**Note**: Transaction fee burning creates deflationary pressure, balancing the inflationary staking rewards.
-
----
-
-## �️ Development Roadmap
-
-### ✅ Phase 1: Foundation (Weeks 1-2) - COMPLETE
-- [x] Project structure & repository setup
-- [x] Comprehensive documentation
-- [x] Clear separation: VITACOIN vs VITAPAY
-- [x] Technical architecture planning
-
-### � Phase 2: VITACOIN Blockchain (Weeks 3-8) - IN PROGRESS
-**Building the cryptocurrency**
-- [ ] Blockchain core (Cosmos SDK setup)
-- [ ] Token creation & transfers
-- [ ] Transaction fee system (0.1%)
-- [ ] Fee distribution (validators/burn/treasury)
-- [ ] Simple staking mechanism
-- [ ] Basic testing & validation
-
-### ⏳ Phase 3: VITAPAY Mobile Wallet (Weeks 9-14)
-**Building the wallet app**
-- [ ] React Native app setup (iOS & Android)
-- [ ] Create/import wallet functionality
-- [ ] Send/receive VITA tokens
-- [ ] QR code scanning
-- [ ] Address book
-- [ ] Transaction history
-- [ ] Biometric security
-- [ ] Beta testing
-
-### ⏳ Phase 4: VITAPAY Payment Gateway (Weeks 15-18)
-**Building merchant tools**
-- [ ] Payment API development
-- [ ] QR code generation
-- [ ] Checkout page integration
-- [ ] "Open VITAPAY App" deep linking
-- [ ] Webhook system
-- [ ] Success/error handling
-- [ ] Basic merchant documentation
-
-### ⏳ Phase 5: Testing & Security (Weeks 19-22)
-- [ ] Comprehensive testing (both projects)
-- [ ] Security audit (VITACOIN blockchain)
-- [ ] Penetration testing (VITAPAY APIs)
-- [ ] Bug fixes & optimization
-- [ ] User acceptance testing
-
-### ⏳ Phase 6: Launch (Weeks 23-26)
-- [ ] Testnet deployment (VITACOIN)
-- [ ] Beta app release (VITAPAY)
-- [ ] Community testing program
-- [ ] Bug bounty program
-- [ ] Mainnet launch (VITACOIN)
-- [ ] Public app launch (VITAPAY)
-- [ ] Initial merchant onboarding
-
-### ⏳ Phase 7: Growth & Enhancement (Post-Launch)
-- [ ] Web2 platform integrations (Shopify, WooCommerce)
-- [ ] Fiat on/off ramps (via crypto intermediates)
-- [ ] Merchant dashboard
-- [ ] Analytics & reporting
-- [ ] Cross-chain bridges (IBC)
-- [ ] Smart contracts (CosmWasm)
-- [ ] DeFi protocols
-- [ ] Compliance & regulations
-
-[Detailed Roadmap →](./docs/project/DEVELOPMENT_ROADMAP.md)
-
----
-
-## 📚 Documentation
-
-### Getting Started
-- **[Ecosystem Overview](./README.md)** - This file
-- **[VITACOIN Docs](./docs/VITACOIN.md)** - Cryptocurrency blockchain
-- **[VITAPAY Docs](./docs/project/VITAPAY.md)** - Payment network
-- **[Developer Guide](./docs/development/GETTING_STARTED.md)** - Start building
-
-### Technical Documentation
-- [Architecture Overview](./docs/architecture/ARCHITECTURE.md)
-- [Development Setup](./docs/architecture/DEV_SETUP.md)
-- [Security Guidelines](./docs/architecture/SECURITY.md)
-
-### VITAPAY Specific
-- [Mobile Wallet Specifications](./docs/project/MOBILE_APP.md)
-- [Payment Gateway API](#) (Coming soon)
-- [Merchant Integration Guide](#) (Coming soon)
-
-### Project Management
-- [Project Summary](./docs/project/PROJECT_SUMMARY.md)
-- [Development Roadmap](./docs/project/DEVELOPMENT_ROADMAP.md)
-- [TODO List](./docs/project/TODO.md)
-- [Revenue Strategy](./docs/project/REVENUE_AUTOMATION_STRATEGY.md)
-
----
-
-## 🧪 Testing
-
-```bash
-# Test VITACOIN blockchain
-cd vitacoin
+# Run all tests
 make test
 
-# Test VITAPAY mobile app
-cd vitapay/mobile-wallet
-npm test
-
-# Run all tests
-./scripts/test-all.sh
+# Run with coverage
+make test-coverage
 ```
 
+## Key Commands
+
+### Node Operations
+```bash
+# Start node
+vitacoind start
+
+# Check node status
+vitacoind status
+
+# View logs
+vitacoind logs
+```
+
+### Wallet Operations
+```bash
+# Create a wallet
+vitacoind keys add mywallet
+
+# Check balance
+vitacoind query bank balances <address>
+
+# Send tokens
+vitacoind tx bank send <from> <to> <amount>uvita --chain-id vitacoin-1
+```
+
+### Staking Operations
+```bash
+# View validators
+vitacoind query staking validators
+
+# Delegate to validator
+vitacoind tx staking delegate <validator-addr> <amount>uvita --from <key>
+
+# Check delegation
+vitacoind query staking delegations <delegator-addr>
+```
+
+### Governance Operations
+```bash
+# Submit proposal
+vitacoind tx gov submit-proposal [proposal-file] --from <key>
+
+# Vote on proposal
+vitacoind tx gov vote <proposal-id> yes --from <key>
+
+# Check proposal status
+vitacoind query gov proposal <proposal-id>
+```
+
+## Architecture
+
+### Cosmos SDK Modules
+
+**Standard Modules:**
+- `auth` - Account management
+- `bank` - Token transfers
+- `staking` - Validator staking
+- `distribution` - Reward distribution
+- `gov` - Governance proposals
+- `slashing` - Validator penalties
+- `ibc` - Cross-chain communication
+
+**Custom Modules:**
+- `x/vitacoin` - VITACOIN-specific features (see `x/vitacoin/README.md`)
+
+### Consensus
+
+- **Algorithm**: CometBFT (formerly Tendermint)
+- **Type**: Proof-of-Stake (PoS)
+- **Block Time**: ~6 seconds
+- **Finality**: Instant (no reorgs)
+
+### Network Specifications
+
+| Property | Value |
+|----------|-------|
+| Chain ID | vitacoin-1 |
+| Token Denom | uvita |
+| Token Symbol | VITA |
+| Decimals | 18 |
+| Total Supply | 1,000,000,000 VITA |
+| Block Time | ~6 seconds |
+| Unbonding Period | 21 days |
+
+## Development
+
+### Project Structure
+
+```
+app/
+├── ante.go           # Transaction preprocessing
+├── app.go           # Main application setup
+├── encoding.go      # Encoding configuration
+├── genesis.go       # Genesis state
+└── params.go        # Network parameters
+
+cmd/vitacoind/
+├── main.go          # Entry point
+└── cmd/             # CLI commands
+
+proto/vitacoin/
+└── v1/              # Protobuf definitions
+
+x/vitacoin/
+├── keeper/          # State management
+├── types/           # Data types
+└── module.go        # Module definition
+```
+
+### Adding Features
+
+1. **Define Protobuf Messages**: Add to `proto/vitacoin/v1/`
+2. **Generate Code**: Run `make proto-gen`
+3. **Implement Logic**: Add to `x/vitacoin/keeper/`
+4. **Add Tests**: Create in `x/vitacoin/keeper/*_test.go`
+5. **Update Module**: Modify `x/vitacoin/module.go`
+
+### Testing
+
+```bash
+# Unit tests
+make test-unit
+
+# Integration tests
+make test-integration
+
+# All tests
+make test
+
+# With coverage report
+make test-coverage
+```
+
+## Token Economics
+
+### Supply
+- **Total Supply**: 1,000,000,000 VITA
+- **Genesis Allocation**: 300M VITA
+- **Staking Rewards**: 400M VITA (over 10 years)
+- **Ecosystem Fund**: 200M VITA
+- **Governance Reserve**: 100M VITA
+
+### Fees
+- **Transaction Fee**: 0.1% of amount
+- **Distribution**: 
+  - 50% to validators
+  - 25% burned (deflationary)
+  - 25% to treasury
+
+### Inflation
+- **Annual Rate**: 3% - 10% (dynamic)
+- **Target Bonded**: 67%
+- **Purpose**: Staking rewards
+
+## Running a Validator
+
+### Requirements
+- Dedicated server (24/7 uptime)
+- 4+ CPU cores
+- 16GB+ RAM
+- 500GB+ SSD storage
+- 100Mbps+ network
+
+### Setup Steps
+
+1. **Install Software**
+   ```bash
+   git clone https://github.com/esspron/vitacoin
+   cd vitacoin/vitacoin
+   make install
+   ```
+
+2. **Initialize Node**
+   ```bash
+   vitacoind init myvalidator --chain-id vitacoin-1
+   ```
+
+3. **Configure**
+   ```bash
+   # Download genesis
+   wget -O ~/.vitacoin/config/genesis.json https://raw.githubusercontent.com/esspron/vitacoin/main/genesis.json
+   
+   # Set seeds/peers
+   # Edit ~/.vitacoin/config/config.toml
+   ```
+
+4. **Create Validator**
+   ```bash
+   vitacoind tx staking create-validator \
+     --amount=1000000uvita \
+     --pubkey=$(vitacoind tendermint show-validator) \
+     --moniker="My Validator" \
+     --commission-rate="0.05" \
+     --commission-max-rate="0.10" \
+     --commission-max-change-rate="0.01" \
+     --min-self-delegation="1" \
+     --from=mykey
+   ```
+
+[Full Validator Guide →](../docs/architecture/VALIDATOR_GUIDE.md) (Coming soon)
+
+## API Documentation
+
+### gRPC
+- **Endpoint**: `grpc.vitacoin.network:9090`
+- **TLS**: Yes
+
+### REST API
+- **Endpoint**: `https://api.vitacoin.network`
+- **Docs**: [API Reference](../docs/api/README.md) (Coming soon)
+
+### WebSocket
+- **Endpoint**: `wss://ws.vitacoin.network`
+- **Purpose**: Real-time events
+
+## Resources
+
+### Documentation
+- [Main Documentation](../docs/README.md) - Complete docs index
+- [VITACOIN Guide](../docs/VITACOIN.md) - Cryptocurrency overview
+- [Architecture](../docs/architecture/ARCHITECTURE.md) - System design
+- [Getting Started](../docs/development/GETTING_STARTED.md) - Developer guide
+
+### External Resources
+- [Cosmos SDK Docs](https://docs.cosmos.network/)
+- [CometBFT Docs](https://docs.cometbft.com/)
+- [CosmJS Docs](https://cosmos.github.io/cosmjs/)
+
+### Community
+- **GitHub**: [github.com/esspron/vitacoin](https://github.com/esspron/vitacoin)
+- **Discord**: Coming soon
+- **Forum**: Coming soon
+
+## Support
+
+- **Technical Issues**: Open an issue on GitHub
+- **Security**: security@vitacoin.network
+- **General**: contact@vitacoin.network
+
+## License
+
+Apache 2.0 - See [LICENSE](../LICENSE)
+
 ---
 
-## 🤝 Contributing
-
-We welcome contributions to both VITACOIN and VITAPAY!
-
-### For VITACOIN (Blockchain)
-- Go development
-- Cosmos SDK knowledge
-- Blockchain expertise
-
-### For VITAPAY (Payment Network)
-- React Native (mobile app)
-- API development
-- UX/UI design
-
-See [Contributing Guidelines](CONTRIBUTING.md) for details.
-
----
-
-## 🔐 Security
-
-Security is our top priority for both projects.
-
-**If you discover a security vulnerability:**
-1. **DO NOT** open a public issue
-2. Email: security@vitacoin.network
-3. Include detailed steps to reproduce
-4. We'll respond within 48 hours
-
-See [SECURITY.md](SECURITY.md) for our security policy.
-
----
-
-## 📜 License
-
-This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🌐 Community & Support
-
-### Official Channels
-- **Website**: https://vitacoin.network (Coming soon)
-- **Documentation**: https://docs.vitacoin.network (Coming soon)
-- **Discord**: [Join our Discord](#) (Coming soon)
-- **Twitter**: [@VitacoinNetwork](#) (Coming soon)
-- **Telegram**: [Join our Telegram](#) (Coming soon)
-
-### Developer Resources
-- **GitHub**: https://github.com/esspron/vitacoin
-- **VITACOIN API**: https://api.vitacoin.network (Coming soon)
-- **VITAPAY API**: https://pay.vitacoin.network/docs (Coming soon)
-- **Block Explorer**: https://explorer.vitacoin.network (Coming soon)
-
----
-
-## 🙏 Acknowledgments
-
-### VITACOIN Built With:
-- [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) - Blockchain framework
-- [CometBFT](https://github.com/cometbft/cometbft) - Consensus engine
-- [IBC-Go](https://github.com/cosmos/ibc-go) - Cross-chain protocol
-
-### VITAPAY Built With:
-- [React Native](https://reactnative.dev/) - Mobile app framework
-- [CosmJS](https://github.com/cosmos/cosmjs) - Blockchain client library
-- [Go](https://golang.org/) - Payment gateway backend
-
-Special thanks to the Cosmos ecosystem and community!
-
----
-
-## 📊 Project Status
-
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Progress](https://img.shields.io/badge/progress-10%25-red)
-![Phase](https://img.shields.io/badge/phase-foundation-blue)
-
-**Current Phase**: Foundation & Planning  
-**VITACOIN**: Architecture & design phase  
-**VITAPAY**: Specification phase  
-**Next Milestone**: VITACOIN blockchain core implementation  
-**Target MVP**: Q2 2026
-
----
-
-## 🎯 Why This Ecosystem?
-
-### The Problem
-Traditional payment systems are:
-- **Expensive**: 2-3% + fixed fees
-- **Slow**: 2-7 day settlements
-- **Limited**: Geographic restrictions
-- **Risky**: Chargebacks, fraud
-- **Opaque**: Hidden fees
-
-### Our Solution
-
-**VITACOIN** provides:
-✅ Decentralized currency  
-✅ Fast transactions  
-✅ Low fees  
-✅ Global reach  
-✅ Complete transparency  
-
-**VITAPAY** provides:
-✅ Easy-to-use interface  
-✅ Simple QR payments  
-✅ Merchant tools  
-✅ Mobile wallet  
-✅ Great user experience  
-
-**Together** = Complete payment solution for the future
-
----
-
-## � Key Differentiators
-
-### vs Traditional Cryptocurrencies (Bitcoin, Ethereum)
-- ✅ **Easier to use** - VITAPAY wallet simplifies everything
-- ✅ **Payment-focused** - Built specifically for transactions
-- ✅ **Lower fees** - 0.1% vs variable high fees
-- ✅ **Faster** - 5 seconds vs minutes/hours
-
-### vs Traditional Payment Processors (PayPal, Stripe, Razorpay)
-- ✅ **97% cheaper** - 0.1% vs 2-3%
-- ✅ **Instant** - 5 seconds vs days
-- ✅ **Global** - No geographic limits
-- ✅ **No chargebacks** - Blockchain finality
-- ✅ **Transparent** - All fees on-chain
-
-### vs Other Crypto Payment Solutions
-- ✅ **Complete ecosystem** - Currency + Payment network together
-- ✅ **Purpose-built** - Not adapting existing blockchain
-- ✅ **User-friendly** - Focus on UX from day 1
-- ✅ **Merchant-ready** - Easy integration tools
-
----
-
-<div align="center">
-
-## 🚀 Ready to Get Started?
-
-**Choose Your Path:**
-
-[🪙 Build with VITACOIN](./vitacoin/README.md) • [💳 Use VITAPAY](./vitapay/README.md) • [📖 Read Docs](./docs/README.md)
-
----
-
-**Built with ❤️ by the VITACOIN Team**
-
-*Making global payments instant, affordable, and accessible to everyone*
-
----
-
-**Last Updated**: October 16, 2025  
-**Version**: 2.0.0 - Ecosystem Edition
-
-[⬆ Back to Top](#vitacoin-ecosystem)
-
-</div>
+**This is the VITACOIN blockchain.** For the payment network, see [../vitapay/](../vitapay/)
