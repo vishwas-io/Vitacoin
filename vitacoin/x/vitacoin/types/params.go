@@ -81,10 +81,10 @@ func (p Params) Validate() error {
 		return fmt.Errorf("fee treasury percent must be between 0 and 100: %s", p.FeeTreasuryPercent)
 	}
 
-	// Validate total fee split equals 100%
+	// Validate total fee split equals 100% (values are fractions: 0.25 + 0.50 + 0.25 = 1.0)
 	totalFeePercent := p.FeeBurnPercent.Add(p.FeeValidatorPercent).Add(p.FeeTreasuryPercent)
-	hundredPercent := math.LegacyNewDec(100)
-	if !totalFeePercent.Equal(hundredPercent) {
+	onehundredPercent := math.LegacyNewDec(1)
+	if !totalFeePercent.Equal(onehundredPercent) {
 		return fmt.Errorf("fee split must total 100%%, got %s%% (burn: %s%%, validator: %s%%, treasury: %s%%)",
 			totalFeePercent, p.FeeBurnPercent, p.FeeValidatorPercent, p.FeeTreasuryPercent)
 	}

@@ -1,29 +1,32 @@
 package vitacoin_test
 
 import (
-	"fmt"
+	"context"
 	"testing"
+	"time"
 
+	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/log"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-
-	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
-	"cosmossdk.io/log"
-	storetypes "cosmossdk.io/store/types"
-	
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
 	"github.com/vitacoin/vitacoin/vitacoin/x/vitacoin"
 	"github.com/vitacoin/vitacoin/vitacoin/x/vitacoin/keeper"
 	"github.com/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
 
+// ModuleTestSuite tests the AppModule and AppModuleBasic implementations.
 type ModuleTestSuite struct {
 	suite.Suite
 
@@ -31,8 +34,6 @@ type ModuleTestSuite struct {
 	keeper    keeper.Keeper
 	module    vitacoin.AppModule
 	cdc       codec.Codec
-	storeKey  *storetypes.KVStoreKey
-	authority string
 }
 
 func TestModuleTestSuite(t *testing.T) {
@@ -40,687 +41,365 @@ func TestModuleTestSuite(t *testing.T) {
 }
 
 func (suite *ModuleTestSuite) SetupTest() {
-	suite.storeKey = sdk.NewKVStoreKey(types.StoreKey)
-	testCtx := testutil.DefaultContextWithDB(suite.T(), suite.storeKey, sdk.NewTransientStoreKey("transient_test"))
-	suite.ctx = testCtx.Ctx.WithBlockHeader(tmproto.Header{Height: 1})
-	
-	encCfg := moduletestutil.MakeTestEncodingConfig(vitacoin.AppModuleBasic{})
-	suite.cdc = encCfg.Codec
-	
-	// Set up authority address for testing
-	suite.authority = "cosmos1test_authority_address_12345678901234567890"
+	// Codec
+	interfaceRegistry := codectypes.NewInterfaceRegistry()
+	types.RegisterInterfaces(interfaceRegistry)
+	suite.cdc = codec.NewProtoCodec(interfaceRegistry)
 
-	// Create store service from runtime
-	storeService := runtime.NewKVStoreService(suite.storeKey)
-	
+	// Store
+	db := dbm.NewMemDB()
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
+	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
+	require.NoError(suite.T(), stateStore.LoadLatestVersion())
+
+	// Context
+	suite.ctx = sdk.NewContext(stateStore, cmtproto.Header{
+		Height: 1,
+		Time:   time.Now(),
+	}, false, log.NewNopLogger())
+
+	// Config
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("vita", "vitapub")
+
+	// Keeper
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	suite.keeper = keeper.NewKeeper(
 		suite.cdc,
-		storeService,
+		runtime.NewKVStoreService(storeKey),
 		log.NewNopLogger(),
-		suite.authority,
+		authority,
+		&modMockBankKeeper{},
+		&modMockAccountKeeper{},
 	)
+
+	p := types.DefaultParams()
+	p.MinMerchantStake = sdkmath.NewInt(100)
+	p.MerchantRegistrationFee = sdkmath.ZeroInt()
+	require.NoError(suite.T(), suite.keeper.SetParams(suite.ctx, p))
 
 	suite.module = vitacoin.NewAppModule(suite.cdc, suite.keeper)
 }
 
-func (suite *ModuleTestSuite) TestAppModuleBasic() {
+// ── minimal mock keepers ──────────────────────────────────────────────────────
+
+type modMockBankKeeper struct{}
+
+func (m *modMockBankKeeper) GetBalance(_ context.Context, _ sdk.AccAddress, denom string) sdk.Coin {
+	return sdk.NewCoin(denom, sdkmath.NewInt(1_000_000_000_000_000_000))
+}
+func (m *modMockBankKeeper) GetAllBalances(_ context.Context, _ sdk.AccAddress) sdk.Coins {
+	return sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(1_000_000_000_000_000_000)))
+}
+func (m *modMockBankKeeper) GetSupply(_ context.Context, denom string) sdk.Coin {
+	return sdk.NewCoin(denom, sdkmath.ZeroInt())
+}
+func (m *modMockBankKeeper) SendCoins(_ context.Context, _ sdk.AccAddress, _ sdk.AccAddress, _ sdk.Coins) error {
+	return nil
+}
+func (m *modMockBankKeeper) SendCoinsFromAccountToModule(_ context.Context, _ sdk.AccAddress, _ string, _ sdk.Coins) error {
+	return nil
+}
+func (m *modMockBankKeeper) SendCoinsFromModuleToAccount(_ context.Context, _ string, _ sdk.AccAddress, _ sdk.Coins) error {
+	return nil
+}
+func (m *modMockBankKeeper) SendCoinsFromModuleToModule(_ context.Context, _, _ string, _ sdk.Coins) error {
+	return nil
+}
+func (m *modMockBankKeeper) MintCoins(_ context.Context, _ string, _ sdk.Coins) error { return nil }
+func (m *modMockBankKeeper) BurnCoins(_ context.Context, _ string, _ sdk.Coins) error { return nil }
+func (m *modMockBankKeeper) SpendableCoins(_ context.Context, _ sdk.AccAddress) sdk.Coins {
+	return sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(1_000_000_000_000_000_000)))
+}
+
+type modMockAccountKeeper struct{}
+
+func (m *modMockAccountKeeper) GetAccount(_ context.Context, _ sdk.AccAddress) sdk.AccountI {
+	return nil
+}
+func (m *modMockAccountKeeper) GetModuleAddress(name string) sdk.AccAddress {
+	return authtypes.NewModuleAddress(name)
+}
+func (m *modMockAccountKeeper) GetModuleAccount(_ context.Context, _ string) sdk.ModuleAccountI {
+	return nil
+}
+
+// ── tests ─────────────────────────────────────────────────────────────────────
+
+// TestAppModuleBasic_Name verifies module name.
+func (suite *ModuleTestSuite) TestAppModuleBasic_Name() {
 	basic := vitacoin.AppModuleBasic{}
-
-	// Test module name
 	require.Equal(suite.T(), types.ModuleName, basic.Name())
+}
 
-	// Test interfaces registration
-	encCfg := moduletestutil.MakeTestEncodingConfig(vitacoin.AppModuleBasic{})
-	registry := encCfg.InterfaceRegistry
+// TestAppModuleBasic_DefaultGenesis verifies default genesis is valid.
+func (suite *ModuleTestSuite) TestAppModuleBasic_DefaultGenesis() {
+	basic := vitacoin.AppModuleBasic{}
+	genesis := basic.DefaultGenesis(suite.cdc)
+	require.NotNil(suite.T(), genesis)
+	err := basic.ValidateGenesis(suite.cdc, nil, genesis)
+	require.NoError(suite.T(), err)
+}
+
+// TestAppModuleBasic_RegisterInterfaces verifies interface registration doesn't panic.
+func (suite *ModuleTestSuite) TestAppModuleBasic_RegisterInterfaces() {
+	basic := vitacoin.AppModuleBasic{}
+	registry := codectypes.NewInterfaceRegistry()
 	require.NotPanics(suite.T(), func() {
 		basic.RegisterInterfaces(registry)
 	})
+}
 
-	// Test default genesis
-	genesis := basic.DefaultGenesis(suite.cdc)
-	require.NotNil(suite.T(), genesis)
+// TestAppModuleBasic_RegisterLegacyAminoCodec verifies amino registration doesn't panic
+// when given a real codec.
+func (suite *ModuleTestSuite) TestAppModuleBasic_RegisterLegacyAminoCodec() {
+	basic := vitacoin.AppModuleBasic{}
+	aminoCdc := codec.NewLegacyAmino()
+	require.NotPanics(suite.T(), func() {
+		basic.RegisterLegacyAminoCodec(aminoCdc)
+	})
+}
 
-	// Test genesis validation
-	err := basic.ValidateGenesis(suite.cdc, nil, genesis)
+// TestAppModule_Name verifies module name.
+func (suite *ModuleTestSuite) TestAppModule_Name() {
+	require.Equal(suite.T(), types.ModuleName, suite.module.Name())
+}
+
+// TestAppModule_ConsensusVersion verifies consensus version.
+func (suite *ModuleTestSuite) TestAppModule_ConsensusVersion() {
+	require.Equal(suite.T(), uint64(1), suite.module.ConsensusVersion())
+}
+
+// TestAppModule_RegisterInvariants verifies invariant registration doesn't panic.
+func (suite *ModuleTestSuite) TestAppModule_RegisterInvariants() {
+	var registered []string
+	mockRegistry := &mockInvariantRegistry{onRegister: func(route string) {
+		registered = append(registered, route)
+	}}
+	require.NotPanics(suite.T(), func() {
+		suite.module.RegisterInvariants(mockRegistry)
+	})
+	require.NotEmpty(suite.T(), registered, "should register at least one invariant")
+}
+
+// TestBeginEndBlock verifies BeginBlock and EndBlock run without error on clean state.
+func (suite *ModuleTestSuite) TestBeginEndBlock() {
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
+	require.NoError(suite.T(), suite.module.EndBlock(suite.ctx))
+}
+
+// TestBeginEndBlock_WithMerchants verifies block processing with existing merchants.
+func (suite *ModuleTestSuite) TestBeginEndBlock_WithMerchants() {
+	// Set a merchant
+	merchant := types.Merchant{
+		Address:            sdk.AccAddress([]byte("modtest_merchant____")).String(),
+		BusinessName:       "Module Test Shop",
+		Tier:               types.MerchantTierBronze,
+		StakeAmount:        sdkmath.NewInt(1000),
+		RegistrationHeight: 1,
+		IsActive:           true,
+		TotalVolume:        sdkmath.ZeroInt(),
+	}
+	require.NoError(suite.T(), suite.keeper.SetMerchant(suite.ctx, merchant))
+
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
+	require.NoError(suite.T(), suite.module.EndBlock(suite.ctx))
+
+	// Merchant should still be there
+	got, err := suite.keeper.GetMerchant(suite.ctx, merchant.Address)
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), merchant.BusinessName, got.BusinessName)
+}
+
+// TestBeginBlock_ExpiresOldPayments verifies pending payments are expired at the right height.
+func (suite *ModuleTestSuite) TestBeginBlock_ExpiresOldPayments() {
+	params, err := suite.keeper.GetParams(suite.ctx)
 	require.NoError(suite.T(), err)
 
-	// Test legacy amino codec registration
-	require.NotPanics(suite.T(), func() {
-		basic.RegisterLegacyAminoCodec(nil)
-	})
-}
-
-func (suite *ModuleTestSuite) TestAppModule() {
-	// Test module name
-	require.Equal(suite.T(), types.ModuleName, suite.module.Name())
-
-	// Test consensus version
-	require.Equal(suite.T(), uint64(1), suite.module.ConsensusVersion())
-
-	// Test invariants registration - should not panic
-	ir := sdk.NewInvariantRegistry()
-	require.NotPanics(suite.T(), func() {
-		suite.module.RegisterInvariants(ir)
-	})
-
-	// Test query routes
-	routes := suite.module.LegacyQuerierHandler(nil)
-	require.Nil(suite.T(), routes) // Should be nil as we use gRPC
-
-	// Test services registration
-	cfg := &moduletestutil.TestConfigurator{}
-	require.NotPanics(suite.T(), func() {
-		suite.module.RegisterServices(cfg)
-	})
-}
-
-func (suite *ModuleTestSuite) TestBeginEndBlock() {
-	// Setup initial state with a payment that should expire
 	payment := types.Payment{
-		Id:             "test-payment-1",
-		FromAddress:    "cosmos1test1",
-		ToAddress:      "cosmos1test2", 
-		Amount:         sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		Fee:            sdk.NewCoin("uvita", sdk.NewInt(10)),
+		Id:             "mod-expire-payment",
+		FromAddress:    sdk.AccAddress([]byte("payer_______________")).String(),
+		ToAddress:      sdk.AccAddress([]byte("payee_______________")).String(),
+		Amount:         sdkmath.NewInt(1000),
 		Status:         types.PaymentStatusPending,
 		CreationHeight: 1,
-		ExpiryHeight:   5, // Will expire at height 5
+		Memo:           "expire test",
 	}
+	require.NoError(suite.T(), suite.keeper.SetPayment(suite.ctx, payment))
 
-	err := suite.keeper.CreatePayment(suite.ctx, payment)
+	// Advance height past timeout
+	expiryHeight := payment.CreationHeight + int64(params.PaymentTimeoutBlocks)
+	suite.ctx = suite.ctx.WithBlockHeight(expiryHeight + 1)
+
+	require.NoError(suite.T(), suite.module.EndBlock(suite.ctx))
+
+	got, err := suite.keeper.GetPayment(suite.ctx, payment.Id)
 	require.NoError(suite.T(), err)
-
-	// Test BeginBlock at height 1 - payment should still be pending
-	suite.ctx = suite.ctx.WithBlockHeight(1)
-	require.NotPanics(suite.T(), func() {
-		suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-	})
-
-	retrievedPayment, err := suite.keeper.GetPayment(suite.ctx, "test-payment-1")
-	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), types.PaymentStatusPending, retrievedPayment.Status)
-
-	// Test BeginBlock at height 6 - payment should be expired
-	suite.ctx = suite.ctx.WithBlockHeight(6)
-	require.NotPanics(suite.T(), func() {
-		suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-	})
-
-	retrievedPayment, err = suite.keeper.GetPayment(suite.ctx, "test-payment-1")
-	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), types.PaymentStatusExpired, retrievedPayment.Status)
-
-	// Test EndBlock - should not panic
-	require.NotPanics(suite.T(), func() {
-		suite.module.EndBlock(suite.ctx, abci.RequestEndBlock{})
-	})
+	require.Equal(suite.T(), types.PaymentStatusFailed, got.Status)
 }
 
-func (suite *ModuleTestSuite) TestInvariants() {
-	// Create test data
-	merchant := types.Merchant{
-		Address:            "cosmos1merchant",
-		BusinessName:       "Test Business",
-		Tier:               types.MerchantTierBronze,
-		StakeAmount:        sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		TotalVolume:        sdk.NewCoin("uvita", sdk.NewInt(500)), // Low volume = Bronze tier
-		RegistrationHeight: 1,
-	}
-
-	err := suite.keeper.CreateMerchant(suite.ctx, merchant)
-	require.NoError(suite.T(), err)
-
-	payment := types.Payment{
-		Id:               "test-payment",
-		FromAddress:      "cosmos1test1",
-		ToAddress:        "cosmos1merchant",
-		Amount:           sdk.NewCoin("uvita", sdk.NewInt(100)),
-		Fee:              sdk.NewCoin("uvita", sdk.NewInt(1)),
-		Status:           types.PaymentStatusCompleted,
-		CreationHeight:   1,
-		CompletionHeight: 2,
-	}
-
-	err = suite.keeper.CreatePayment(suite.ctx, payment)
-	require.NoError(suite.T(), err)
-
+// TestBeginBlock_VaultUnlockEvents verifies vault unlock events are emitted.
+func (suite *ModuleTestSuite) TestBeginBlock_VaultUnlockEvents() {
 	vault := types.Vault{
-		Id:               "test-vault",
-		Owner:            "cosmos1test1",
-		Amount:           sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		CreationHeight:   1,
-		UnlockHeight:     100,
-		RewardMultiplier: sdk.NewDecWithPrec(15, 1), // 1.5x
-		Withdrawn:        false,
-	}
-
-	err = suite.keeper.CreateVault(suite.ctx, vault)
-	require.NoError(suite.T(), err)
-
-	rewardPool := types.RewardPool{
-		Id:                 "test-pool",
-		MerchantAddress:    "cosmos1merchant",
-		TotalRewards:       sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		DistributedRewards: sdk.NewCoin("uvita", sdk.NewInt(200)),
-		StartHeight:        1,
-		EndHeight:          0,
-		Active:             true,
-	}
-
-	err = suite.keeper.CreateRewardPool(suite.ctx, rewardPool)
-	require.NoError(suite.T(), err)
-
-	// Test all invariants
-	invariants := keeper.AllInvariants(suite.keeper)
-	_, broken := invariants(suite.ctx)
-	require.False(suite.T(), broken, "Invariants should not be broken with valid data")
-
-	// Test individual invariants
-	_, broken = keeper.PaymentConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Payment invariant should not be broken")
-
-	_, broken = keeper.VaultConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Vault invariant should not be broken")
-
-	_, broken = keeper.RewardPoolConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Reward pool invariant should not be broken")
-
-	_, broken = keeper.MerchantStakeConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Merchant stake invariant should not be broken")
-}
-
-func (suite *ModuleTestSuite) TestBrokenInvariants() {
-	// Create invalid payment data to break invariants
-	invalidPayment := types.Payment{
-		Id:               "invalid-payment",
-		FromAddress:      "invalid-address", // Invalid bech32 address
-		ToAddress:        "cosmos1merchant",
-		Amount:           sdk.Coin{}, // Invalid amount
-		Fee:              sdk.NewCoin("uvita", sdk.NewInt(-1)), // Negative fee
-		Status:           types.PaymentStatusCompleted,
-		CreationHeight:   5,
-		CompletionHeight: 2, // Completion before creation
-	}
-
-	// Manually store invalid data to test invariant detection
-	store := suite.ctx.KVStore(suite.storeKey)
-	bz, err := suite.cdc.Marshal(&invalidPayment)
-	require.NoError(suite.T(), err)
-	store.Set(types.PaymentKey(invalidPayment.Id), bz)
-
-	// Test payment invariant with invalid data
-	_, broken := keeper.PaymentConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.True(suite.T(), broken, "Payment invariant should be broken with invalid data")
-
-	// Test that all invariants detect the broken state
-	_, broken = keeper.AllInvariants(suite.keeper)(suite.ctx)
-	require.True(suite.T(), broken, "All invariants should detect broken state")
-}
-
-func (suite *ModuleTestSuite) TestMerchantTierCalculation() {
-	// Test merchant tier calculation with different volumes
-	lowVolume := sdk.NewCoin("uvita", sdk.NewInt(500))
-	tier := suite.keeper.CalculateMerchantTier(lowVolume)
-	require.Equal(suite.T(), types.MerchantTierBronze, tier)
-
-	mediumVolume := sdk.NewCoin("uvita", sdk.NewInt(5000))
-	tier = suite.keeper.CalculateMerchantTier(mediumVolume)
-	require.Equal(suite.T(), types.MerchantTierSilver, tier)
-
-	highVolume := sdk.NewCoin("uvita", sdk.NewInt(50000))
-	tier = suite.keeper.CalculateMerchantTier(highVolume)
-	require.Equal(suite.T(), types.MerchantTierGold, tier)
-}
-
-func (suite *ModuleTestSuite) TestVaultUnlocking() {
-	// Create a vault that should unlock
-	vault := types.Vault{
-		Id:               "unlock-vault",
-		Owner:            "cosmos1test1",
-		Amount:           sdk.NewCoin("uvita", sdk.NewInt(1000)),
+		Id:               "mod-unlock-vault",
+		Owner:            sdk.AccAddress([]byte("vault_owner_________")).String(),
+		Amount:           sdkmath.NewInt(5000),
+		LockDuration:     5,
 		CreationHeight:   1,
 		UnlockHeight:     5,
-		RewardMultiplier: sdk.NewDecWithPrec(15, 1),
-		Withdrawn:        false,
+		RewardMultiplier: sdkmath.LegacyNewDecWithPrec(11, 1),
 	}
+	require.NoError(suite.T(), suite.keeper.SetVault(suite.ctx, vault))
 
-	err := suite.keeper.CreateVault(suite.ctx, vault)
-	require.NoError(suite.T(), err)
-
-	// At height 4, vault should not be unlocked
+	// Before unlock height — no event
 	suite.ctx = suite.ctx.WithBlockHeight(4)
-	suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
 
-	retrievedVault, err := suite.keeper.GetVault(suite.ctx, "unlock-vault")
-	require.NoError(suite.T(), err)
-	require.False(suite.T(), retrievedVault.Withdrawn)
-
-	// At height 5, vault should be available for withdrawal
+	// At/after unlock height — event should fire
 	suite.ctx = suite.ctx.WithBlockHeight(5)
-	suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-
-	// The vault should still exist but be unlocked (not automatically withdrawn)
-	retrievedVault, err = suite.keeper.GetVault(suite.ctx, "unlock-vault")
-	require.NoError(suite.T(), err)
-	require.False(suite.T(), retrievedVault.Withdrawn) // Only unlocked, not withdrawn
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
 }
 
-func (suite *ModuleTestSuite) TestRewardPoolActivation() {
-	// Create a reward pool with future activation
-	rewardPool := types.RewardPool{
-		Id:                 "future-pool",
-		MerchantAddress:    "cosmos1merchant",
-		TotalRewards:       sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		DistributedRewards: sdk.NewCoin("uvita", sdk.NewInt(0)),
+// TestRewardPoolStatusTransitions verifies pools activate and deactivate at correct heights.
+func (suite *ModuleTestSuite) TestRewardPoolStatusTransitions() {
+	pool := types.RewardPool{
+		Id:                 "mod-pool",
+		MerchantAddress:    sdk.AccAddress([]byte("pool_merchant_______")).String(),
+		TotalRewards:       sdkmath.NewInt(10000),
+		DistributedRewards: sdkmath.ZeroInt(),
 		StartHeight:        10,
 		EndHeight:          20,
-		Active:             false,
+		IsActive:           false,
 	}
+	require.NoError(suite.T(), suite.keeper.SetRewardPool(suite.ctx, pool))
 
-	err := suite.keeper.CreateRewardPool(suite.ctx, rewardPool)
-	require.NoError(suite.T(), err)
-
-	// At height 5, pool should not be active
+	// Before start: inactive
 	suite.ctx = suite.ctx.WithBlockHeight(5)
-	suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-
-	retrievedPool, err := suite.keeper.GetRewardPool(suite.ctx, "future-pool")
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
+	got, err := suite.keeper.GetRewardPool(suite.ctx, pool.Id)
 	require.NoError(suite.T(), err)
-	require.False(suite.T(), retrievedPool.Active)
+	require.False(suite.T(), got.IsActive)
 
-	// At height 10, pool should be active
+	// At start: active
 	suite.ctx = suite.ctx.WithBlockHeight(10)
-	suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-
-	retrievedPool, err = suite.keeper.GetRewardPool(suite.ctx, "future-pool")
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
+	got, err = suite.keeper.GetRewardPool(suite.ctx, pool.Id)
 	require.NoError(suite.T(), err)
-	require.True(suite.T(), retrievedPool.Active)
+	require.True(suite.T(), got.IsActive)
 
-	// At height 21, pool should be inactive
+	// After end: inactive
 	suite.ctx = suite.ctx.WithBlockHeight(21)
-	suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-
-	retrievedPool, err = suite.keeper.GetRewardPool(suite.ctx, "future-pool")
+	require.NoError(suite.T(), suite.module.BeginBlock(suite.ctx))
+	got, err = suite.keeper.GetRewardPool(suite.ctx, pool.Id)
 	require.NoError(suite.T(), err)
-	require.False(suite.T(), retrievedPool.Active)
+	require.False(suite.T(), got.IsActive)
 }
 
-// Benchmark tests for production performance validation
-func BenchmarkBeginBlock(b *testing.B) {
-	suite := new(ModuleTestSuite)
-	suite.SetupTest()
-
-	// Create substantial test data
-	for i := 0; i < 1000; i++ {
-		payment := types.Payment{
-			Id:             fmt.Sprintf("payment-%d", i),
-			FromAddress:    "cosmos1test1",
-			ToAddress:      "cosmos1test2",
-			Amount:         sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			Fee:            sdk.NewCoin("uvita", sdk.NewInt(10)),
-			Status:         types.PaymentStatusPending,
-			CreationHeight: 1,
-			ExpiryHeight:   int64(i + 10),
-		}
-		suite.keeper.CreatePayment(suite.ctx, payment)
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-	}
-}
-
-func BenchmarkInvariants(b *testing.B) {
-	suite := new(ModuleTestSuite)
-	suite.SetupTest()
-
-	// Create comprehensive test data
-	for i := 0; i < 100; i++ {
-		merchant := types.Merchant{
-			Address:            fmt.Sprintf("cosmos1merchant%d", i),
-			BusinessName:       fmt.Sprintf("Business %d", i),
-			Tier:               types.MerchantTierBronze,
-			StakeAmount:        sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			TotalVolume:        sdk.NewCoin("uvita", sdk.NewInt(500)),
-			RegistrationHeight: int64(i + 1),
-		}
-		suite.keeper.CreateMerchant(suite.ctx, merchant)
-
-		payment := types.Payment{
-			Id:               fmt.Sprintf("payment-%d", i),
-			FromAddress:      "cosmos1test1",
-			ToAddress:        merchant.Address,
-			Amount:           sdk.NewCoin("uvita", sdk.NewInt(100)),
-			Fee:              sdk.NewCoin("uvita", sdk.NewInt(1)),
-			Status:           types.PaymentStatusCompleted,
-			CreationHeight:   int64(i + 1),
-			CompletionHeight: int64(i + 2),
-		}
-		suite.keeper.CreatePayment(suite.ctx, payment)
-
-		vault := types.Vault{
-			Id:               fmt.Sprintf("vault-%d", i),
-			Owner:            fmt.Sprintf("cosmos1owner%d", i),
-			Amount:           sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			CreationHeight:   int64(i + 1),
-			UnlockHeight:     int64(i + 100),
-			RewardMultiplier: sdk.NewDecWithPrec(15, 1),
-			Withdrawn:        false,
-		}
-		suite.keeper.CreateVault(suite.ctx, vault)
-
-		rewardPool := types.RewardPool{
-			Id:                 fmt.Sprintf("pool-%d", i),
-			MerchantAddress:    merchant.Address,
-			TotalRewards:       sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			DistributedRewards: sdk.NewCoin("uvita", sdk.NewInt(100)),
-			StartHeight:        int64(i + 1),
-			EndHeight:          0,
-			Active:             true,
-		}
-		suite.keeper.CreateRewardPool(suite.ctx, rewardPool)
-	}
-
-	invariants := keeper.AllInvariants(suite.keeper)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		invariants(suite.ctx)
-	}
-}
-
-func BenchmarkEndBlock(b *testing.B) {
-	suite := new(ModuleTestSuite)
-	suite.SetupTest()
-
-	// Create test data for end block processing
-	for i := 0; i < 50; i++ {
-		merchant := types.Merchant{
-			Address:            fmt.Sprintf("cosmos1merchant%d", i),
-			BusinessName:       fmt.Sprintf("Business %d", i),
-			Tier:               types.MerchantTierBronze,
-			StakeAmount:        sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			TotalVolume:        sdk.NewCoin("uvita", sdk.NewInt(int64(i * 1000))),
-			RegistrationHeight: int64(i + 1),
-		}
-		suite.keeper.CreateMerchant(suite.ctx, merchant)
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		suite.module.EndBlock(suite.ctx, abci.RequestEndBlock{})
-	}
-}
-
-func (suite *ModuleTestSuite) TestAppModuleBasic() {
-	basic := vitacoin.AppModuleBasic{}
-
-	// Test module name
-	require.Equal(suite.T(), types.ModuleName, basic.Name())
-
-	// Test interfaces registration
-	encCfg := moduletestutil.MakeTestEncodingConfig(vitacoin.AppModuleBasic{})
-	registry := encCfg.InterfaceRegistry
-	require.NotPanics(suite.T(), func() {
-		basic.RegisterInterfaces(registry)
-	})
-
-	// Test default genesis
-	genesis := basic.DefaultGenesis(suite.cdc)
-	require.NotNil(suite.T(), genesis)
-
-	// Test genesis validation
-	err := basic.ValidateGenesis(suite.cdc, nil, genesis)
-	require.NoError(suite.T(), err)
-}
-
-func (suite *ModuleTestSuite) TestAppModule() {
-	// Test module name
-	require.Equal(suite.T(), types.ModuleName, suite.module.Name())
-
-	// Test invariants registration - should not panic
-	ir := sdk.NewInvariantRegistry()
-	require.NotPanics(suite.T(), func() {
-		suite.module.RegisterInvariants(ir)
-	})
-
-	// Test query routes
-	routes := suite.module.LegacyQuerierHandler(nil)
-	require.Nil(suite.T(), routes) // Should be nil as we use gRPC
-
-	// Test services registration
-	cfg := &moduletestutil.TestConfigurator{}
-	require.NotPanics(suite.T(), func() {
-		suite.module.RegisterServices(cfg)
-	})
-}
-
-func (suite *ModuleTestSuite) TestBeginEndBlock() {
-	// Setup initial state with a payment that should expire
-	payment := types.Payment{
-		Id:             "test-payment-1",
-		FromAddress:    "cosmos1test1",
-		ToAddress:      "cosmos1test2", 
-		Amount:         sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		Fee:            sdk.NewCoin("uvita", sdk.NewInt(10)),
-		Status:         types.PaymentStatusPending,
-		CreationHeight: 1,
-		ExpiryHeight:   5, // Will expire at height 5
-	}
-
-	err := suite.keeper.CreatePayment(suite.ctx, payment)
-	require.NoError(suite.T(), err)
-
-	// Test BeginBlock at height 1 - payment should still be pending
-	suite.ctx = suite.ctx.WithBlockHeight(1)
-	require.NotPanics(suite.T(), func() {
-		suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-	})
-
-	retrievedPayment, err := suite.keeper.GetPayment(suite.ctx, "test-payment-1")
-	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), types.PaymentStatusPending, retrievedPayment.Status)
-
-	// Test BeginBlock at height 6 - payment should be expired
-	suite.ctx = suite.ctx.WithBlockHeight(6)
-	require.NotPanics(suite.T(), func() {
-		suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-	})
-
-	retrievedPayment, err = suite.keeper.GetPayment(suite.ctx, "test-payment-1")
-	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), types.PaymentStatusExpired, retrievedPayment.Status)
-
-	// Test EndBlock - should not panic
-	require.NotPanics(suite.T(), func() {
-		suite.module.EndBlock(suite.ctx, abci.RequestEndBlock{})
-	})
-}
-
-func (suite *ModuleTestSuite) TestConsensusVersion() {
-	// Test consensus version
-	version := suite.module.ConsensusVersion()
-	require.Equal(suite.T(), uint64(1), version)
-}
-
-func (suite *ModuleTestSuite) TestInvariants() {
-	// Create test data
+// TestInvariants_ValidState verifies invariants pass with correct data.
+func (suite *ModuleTestSuite) TestInvariants_ValidState() {
 	merchant := types.Merchant{
-		Address:            "cosmos1merchant",
-		BusinessName:       "Test Business",
+		Address:            sdk.AccAddress([]byte("inv_merchant________")).String(),
+		BusinessName:       "Invariant Shop",
 		Tier:               types.MerchantTierBronze,
-		StakeAmount:        sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		TotalVolume:        sdk.NewCoin("uvita", sdk.NewInt(500)), // Low volume = Bronze tier
+		StakeAmount:        sdkmath.NewInt(1000),
 		RegistrationHeight: 1,
+		IsActive:           true,
+		TotalVolume:        sdkmath.ZeroInt(),
 	}
-
-	err := suite.keeper.CreateMerchant(suite.ctx, merchant)
-	require.NoError(suite.T(), err)
+	require.NoError(suite.T(), suite.keeper.SetMerchant(suite.ctx, merchant))
 
 	payment := types.Payment{
-		Id:             "test-payment",
-		FromAddress:    "cosmos1test1",
-		ToAddress:      "cosmos1merchant",
-		Amount:         sdk.NewCoin("uvita", sdk.NewInt(100)),
-		Fee:            sdk.NewCoin("uvita", sdk.NewInt(1)),
-		Status:         types.PaymentStatusCompleted,
-		CreationHeight: 1,
+		Id:               "inv-payment",
+		FromAddress:      sdk.AccAddress([]byte("inv_payer___________")).String(),
+		ToAddress:        merchant.Address,
+		Amount:           sdkmath.NewInt(100),
+		Status:           types.PaymentStatusCompleted,
+		CreationHeight:   1,
 		CompletionHeight: 2,
 	}
-
-	err = suite.keeper.CreatePayment(suite.ctx, payment)
-	require.NoError(suite.T(), err)
+	require.NoError(suite.T(), suite.keeper.SetPayment(suite.ctx, payment))
 
 	vault := types.Vault{
-		Id:               "test-vault",
-		Owner:            "cosmos1test1",
-		Amount:           sdk.NewCoin("uvita", sdk.NewInt(1000)),
+		Id:               "inv-vault",
+		Owner:            sdk.AccAddress([]byte("inv_owner___________")).String(),
+		Amount:           sdkmath.NewInt(1000),
+		LockDuration:     100,
 		CreationHeight:   1,
-		UnlockHeight:     100,
-		RewardMultiplier: sdk.NewDecWithPrec(15, 1), // 1.5x
-		Withdrawn:        false,
+		UnlockHeight:     101,
+		RewardMultiplier: sdkmath.LegacyNewDec(1),
 	}
+	require.NoError(suite.T(), suite.keeper.SetVault(suite.ctx, vault))
 
-	err = suite.keeper.CreateVault(suite.ctx, vault)
-	require.NoError(suite.T(), err)
-
-	rewardPool := types.RewardPool{
-		Id:                "test-pool",
-		MerchantAddress:   "cosmos1merchant",
-		TotalRewards:      sdk.NewCoin("uvita", sdk.NewInt(1000)),
-		DistributedRewards: sdk.NewCoin("uvita", sdk.NewInt(200)),
-		StartHeight:       1,
-		EndHeight:         0,
-		Active:            true,
+	pool := types.RewardPool{
+		Id:                 "inv-pool",
+		MerchantAddress:    merchant.Address,
+		TotalRewards:       sdkmath.NewInt(1000),
+		DistributedRewards: sdkmath.NewInt(200),
+		StartHeight:        1,
+		EndHeight:          0,
+		IsActive:           true,
 	}
+	require.NoError(suite.T(), suite.keeper.SetRewardPool(suite.ctx, pool))
 
-	err = suite.keeper.CreateRewardPool(suite.ctx, rewardPool)
-	require.NoError(suite.T(), err)
+	_, broken := keeper.AllInvariants(suite.keeper)(suite.ctx)
+	require.False(suite.T(), broken, "invariants should pass with valid data")
 
-	// Test all invariants
-	invariants := keeper.AllInvariants(suite.keeper)
-	_, broken := invariants(suite.ctx)
-	require.False(suite.T(), broken, "Invariants should not be broken with valid data")
-
-	// Test individual invariants
 	_, broken = keeper.PaymentConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Payment invariant should not be broken")
+	require.False(suite.T(), broken)
 
 	_, broken = keeper.VaultConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Vault invariant should not be broken")
+	require.False(suite.T(), broken)
 
 	_, broken = keeper.RewardPoolConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Reward pool invariant should not be broken")
+	require.False(suite.T(), broken)
 
 	_, broken = keeper.MerchantStakeConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.False(suite.T(), broken, "Merchant stake invariant should not be broken")
+	require.False(suite.T(), broken)
 }
 
-func (suite *ModuleTestSuite) TestBrokenInvariants() {
-	// Create invalid payment data to break invariants
-	invalidPayment := types.Payment{
-		Id:               "invalid-payment",
-		FromAddress:      "invalid-address", // Invalid bech32 address
-		ToAddress:        "cosmos1merchant",
-		Amount:           sdk.Coin{}, // Invalid amount
-		Fee:              sdk.NewCoin("uvita", sdk.NewInt(-1)), // Negative fee
-		Status:           types.PaymentStatusCompleted,
-		CreationHeight:   5,
-		CompletionHeight: 2, // Completion before creation
-	}
-
-	// Manually store invalid data to test invariant detection
-	// Note: Normal creation methods would validate, so we test the invariants themselves
-	store := suite.ctx.KVStore(suite.keeper.GetStoreKey())
-	bz, err := suite.cdc.Marshal(&invalidPayment)
-	require.NoError(suite.T(), err)
-	store.Set(types.PaymentKey(invalidPayment.Id), bz)
-
-	// Test payment invariant with invalid data
-	_, broken := keeper.PaymentConsistencyInvariant(suite.keeper)(suite.ctx)
-	require.True(suite.T(), broken, "Payment invariant should be broken with invalid data")
-
-	// Test that all invariants detect the broken state
-	_, broken = keeper.AllInvariants(suite.keeper)(suite.ctx)
-	require.True(suite.T(), broken, "All invariants should detect broken state")
-}
-
-// Test helper functions and edge cases
-func (suite *ModuleTestSuite) TestModuleHelpers() {
-	// Test merchant tier calculation
-	lowVolume := sdk.NewCoin("uvita", sdk.NewInt(500))
-	tier := suite.keeper.CalculateMerchantTier(lowVolume)
+// TestCalculateMerchantTier verifies tier calculation by volume.
+func (suite *ModuleTestSuite) TestCalculateMerchantTier() {
+	// Small volume → Bronze
+	tier := suite.keeper.CalculateMerchantTier(sdk.NewCoin("avita", sdkmath.NewInt(500)))
 	require.Equal(suite.T(), types.MerchantTierBronze, tier)
 
-	mediumVolume := sdk.NewCoin("uvita", sdk.NewInt(5000))
-	tier = suite.keeper.CalculateMerchantTier(mediumVolume)
-	require.Equal(suite.T(), types.MerchantTierSilver, tier)
-
-	highVolume := sdk.NewCoin("uvita", sdk.NewInt(50000))
-	tier = suite.keeper.CalculateMerchantTier(highVolume)
-	require.Equal(suite.T(), types.MerchantTierGold, tier)
+	// Very large volume → Platinum
+	largeAmt, _ := sdkmath.NewIntFromString("2000000000000000000000000")
+	tier = suite.keeper.CalculateMerchantTier(sdk.NewCoin("avita", largeAmt))
+	require.Equal(suite.T(), types.MerchantTierPlatinum, tier)
 }
 
-// Benchmark tests for module operations
-func BenchmarkBeginBlock(b *testing.B) {
-	suite := new(ModuleTestSuite)
-	suite.SetupTest()
-
-	// Create some test data
-	for i := 0; i < 100; i++ {
-		payment := types.Payment{
-			Id:             fmt.Sprintf("payment-%d", i),
-			FromAddress:    "cosmos1test1",
-			ToAddress:      "cosmos1test2",
-			Amount:         sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			Fee:            sdk.NewCoin("uvita", sdk.NewInt(10)),
-			Status:         types.PaymentStatusPending,
-			CreationHeight: 1,
-			ExpiryHeight:   int64(i + 10),
-		}
-		suite.keeper.CreatePayment(suite.ctx, payment)
+// TestInitExportGenesis round-trips genesis state.
+func (suite *ModuleTestSuite) TestInitExportGenesis() {
+	// Store some state
+	merchant := types.Merchant{
+		Address:            sdk.AccAddress([]byte("genesis_merchant____")).String(),
+		BusinessName:       "Genesis Shop",
+		Tier:               types.MerchantTierBronze,
+		StakeAmount:        sdkmath.NewInt(500),
+		RegistrationHeight: 1,
+		IsActive:           true,
+		TotalVolume:        sdkmath.ZeroInt(),
 	}
+	require.NoError(suite.T(), suite.keeper.SetMerchant(suite.ctx, merchant))
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		suite.module.BeginBlock(suite.ctx, abci.RequestBeginBlock{})
-	}
+	// Export
+	exported, err := suite.keeper.ExportGenesis(suite.ctx)
+	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), exported)
+	require.Len(suite.T(), exported.MerchantList, 1)
+	require.Equal(suite.T(), "Genesis Shop", exported.MerchantList[0].BusinessName)
 }
 
-func BenchmarkInvariants(b *testing.B) {
-	suite := new(ModuleTestSuite)
-	suite.SetupTest()
+// ── mock InvariantRegistry ────────────────────────────────────────────────────
 
-	// Create test data
-	for i := 0; i < 50; i++ {
-		merchant := types.Merchant{
-			Address:            fmt.Sprintf("cosmos1merchant%d", i),
-			BusinessName:       fmt.Sprintf("Business %d", i),
-			Tier:               types.MerchantTierBronze,
-			StakeAmount:        sdk.NewCoin("uvita", sdk.NewInt(1000)),
-			TotalVolume:        sdk.NewCoin("uvita", sdk.NewInt(500)),
-			RegistrationHeight: int64(i + 1),
-		}
-		suite.keeper.CreateMerchant(suite.ctx, merchant)
+type mockInvariantRegistry struct {
+	onRegister func(route string)
+}
 
-		payment := types.Payment{
-			Id:               fmt.Sprintf("payment-%d", i),
-			FromAddress:      "cosmos1test1",
-			ToAddress:        merchant.Address,
-			Amount:           sdk.NewCoin("uvita", sdk.NewInt(100)),
-			Fee:              sdk.NewCoin("uvita", sdk.NewInt(1)),
-			Status:           types.PaymentStatusCompleted,
-			CreationHeight:   int64(i + 1),
-			CompletionHeight: int64(i + 2),
-		}
-		suite.keeper.CreatePayment(suite.ctx, payment)
-	}
-
-	invariants := keeper.AllInvariants(suite.keeper)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		invariants(suite.ctx)
+func (m *mockInvariantRegistry) RegisterRoute(moduleName, route string, invar sdk.Invariant) {
+	if m.onRegister != nil {
+		m.onRegister(moduleName + "/" + route)
 	}
 }

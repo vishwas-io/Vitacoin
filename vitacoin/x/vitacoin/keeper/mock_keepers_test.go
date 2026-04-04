@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // MockBankKeeper is a minimal mock for testing
@@ -85,8 +86,9 @@ func (m *MockAccountKeeper) GetAccount(ctx context.Context, addr sdk.AccAddress)
 	return nil
 }
 func (m *MockAccountKeeper) GetModuleAddress(name string) sdk.AccAddress {
-	return sdk.AccAddress{}
+	return authtypes.NewModuleAddress(name)
 }
 func (m *MockAccountKeeper) GetModuleAccount(ctx context.Context, name string) sdk.ModuleAccountI {
-	return nil
+	// Return a real module account so treasury/module account lookups succeed in tests
+	return authtypes.NewEmptyModuleAccount(name)
 }

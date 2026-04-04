@@ -2,13 +2,54 @@
 
 > **This is the VITACOIN blockchain TODO list.** For VITAPAY payment network tasks, see [../vitapay/TODO.md](../vitapay/TODO.md)
 
-**Project Status**: ✅ Phase 1 Complete - Phase 2 at 90% (Testing refinement needed)
+**Project Status**: ✅ Phase 1 & 2 Complete — 🚧 Phase 3 at 75% (ACTIVE — Fix Queue running)
 
-**Last Verified**: October 17, 2025 - Comprehensive code inspection completed
+**Last Verified**: April 4, 2026 — Active development by Nova ⚡
 
 ---
 
-## 🎯 Current Sprint - Core Implementation Complete, Tests Need Refinement
+## 🚦 Current Phase Status
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Foundation | ✅ 100% | Oct 2025 |
+| Phase 2: Custom Module | ✅ 98% | Oct 2025 |
+| Phase 3: Fee System & Treasury | 🚧 75% | **ACTIVE** |
+| Phase 4: Staking System | ⬜ 0% | Q2 2026 |
+| Phase 5: Governance | ⬜ 0% | Q2 2026 |
+| Phase 6: IBC Integration | ⬜ 0% | Q3 2026 |
+| Phase 7: VITAPAY Mobile Wallet | ⬜ 0% | Q2 2026 |
+| Phase 8: VITAPAY Gateway | ⬜ 0% | Q2 2026 |
+| Phase 9: Mainnet Launch | 🎯 0% | August 2026 |
+
+---
+
+## 🔧 Phase 3 Fix Queue (April 4, 2026)
+
+### ✅ Done Today
+- [x] Go 1.21.13 installed to `/usr/local/go`
+- [x] `params.pb.go`: Phase 3 fields (12-18) marshal/unmarshal/size added
+  - FeeValidatorPercent, FeeTreasuryPercent, MinProtocolFee, MaxProtocolFee
+  - BurnCapSupply, PausedFeeCollection, PausedFeeDistribution
+- [x] Fee split validation: denominator fixed from 100 → 1.0 (values are fractions)
+- [x] `TreasurySpendProposal` now fully implements `govtypes.Content` (pointer receivers)
+- [x] Treasury proposal handler: unblocked (removed TODO stub)
+- [x] `RegisterMerchant`: added name length validation (max 100 chars)
+- [x] `UpdateMerchant`: added min-stake check on additional stake
+- [x] Keeper tests: `MockBankKeeper` + `MockAccountKeeper` added
+- [x] `SetupTest`: test-friendly params (minStake=1000, regFee=0, txFee=0.1)
+- [x] Test cases fixed: `IsActive=true`, payment status, `MerchantAddress`, `uint64` types
+
+### 📋 Remaining (Next)
+- [ ] Fix 2 remaining test failures (invalid amount format, stake too low edge case)
+- [ ] gRPC pagination nil fix — 4 endpoints (grpc_query.go lines 80/117/154/191)
+- [ ] Rate limiting: stub → real implementation (msg_server_validation.go:238)
+- [ ] `make test` all green — coverage ≥50%
+- [ ] Genesis & vesting setup
+- [ ] Commit & push to `esspron/VITACOIN`
+- [ ] Update STATUS.md — mark Phase 3 complete
+
+---
 
 ### ✅ Phase 1: Foundation Setup (100% Complete - VERIFIED)
 

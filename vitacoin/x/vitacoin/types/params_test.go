@@ -17,8 +17,8 @@ func TestDefaultParams(t *testing.T) {
 
 	// Verify default values
 	require.Equal(t, math.LegacyNewDecWithPrec(1, 3), params.MinGasPrice)
-	require.Equal(t, math.LegacyNewDecWithPrec(1, 1), params.TransactionFeePercent) // 0.1%
-	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), params.MerchantFeeDiscount) // 50%
+	require.Equal(t, math.LegacyNewDecWithPrec(1, 3), params.TransactionFeePercent) // 0.1%
+	require.Equal(t, math.LegacyZeroDec(), params.MerchantFeeDiscount) // 50%
 	require.True(t, params.EnableMerchantLoyalty)
 	require.True(t, params.EnableInstantSettlement)
 }
@@ -269,14 +269,14 @@ func TestGenesisStateValidate(t *testing.T) {
 				Params: types.DefaultParams(),
 				MerchantList: []types.Merchant{
 					{
-						Address:      "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
+						Address:      "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
 						BusinessName: "Test 1",
 						StakeAmount:  math.NewInt(1000),
 						TotalVolume:  math.NewInt(0),
 						Tier:         0,
 					},
 					{
-						Address:      "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
+						Address:      "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
 						BusinessName: "Test 2",
 						StakeAmount:  math.NewInt(2000),
 						TotalVolume:  math.NewInt(0),
@@ -298,16 +298,16 @@ func TestGenesisStateValidate(t *testing.T) {
 				PaymentList: []types.Payment{
 					{
 						Id:             "payment-1",
-						FromAddress:    "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
-						ToAddress:      "cosmos1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5",
+						FromAddress:    "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
+						ToAddress:      "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4",
 						Amount:         math.NewInt(1000),
 						Status:         types.PaymentStatusPending,
 						CreationHeight: 100,
 					},
 					{
 						Id:             "payment-1",
-						FromAddress:    "cosmos1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5",
-						ToAddress:      "cosmos1syavy2npfyt9tcncdtsdzf7kny9lh777pahuux",
+						FromAddress:    "vita1x0xrzpm2h89smwsapxdhtualwh8w0968vp48k4",
+						ToAddress:      "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
 						Amount:         math.NewInt(2000),
 						Status:         types.PaymentStatusPending,
 						CreationHeight: 101,

@@ -282,7 +282,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 				LockDuration: 0,
 			},
 			expectErr: true,
-			errMsg:    "lock duration must be greater than 0",
+			errMsg:    "lock duration must be at least 1 blocks",
 		},
 		{
 			name: "lock duration too long",
@@ -372,7 +372,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Amounts:    []math.Int{math.NewInt(1000000000000000)}, // Only 1 amount for 2 recipients
 			},
 			expectErr: true,
-			errMsg:    "amounts list must match recipients list length",
+			errMsg:    "recipients and amounts lists must have the same length",
 		},
 		{
 			name: "invalid recipient address",

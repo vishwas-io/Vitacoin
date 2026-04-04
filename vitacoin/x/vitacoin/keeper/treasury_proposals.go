@@ -66,17 +66,14 @@ func HandleTreasurySpendProposal(ctx sdk.Context, k Keeper, proposal *types.Trea
 
 // NewTreasurySpendProposalHandler creates a governance proposal handler for treasury spending
 // This integrates with x/gov module for governance-controlled treasury operations
-// TODO: Enable when TreasurySpendProposal implements govtypes.Content interface (after proto regen)
 func NewTreasurySpendProposalHandler(k Keeper) govtypes.Handler {
 	return func(ctx sdk.Context, content govtypes.Content) error {
-		// TODO: Uncomment after proto regeneration
-		// switch c := content.(type) {
-		// case *types.TreasurySpendProposal:
-		// 	return HandleTreasurySpendProposal(ctx, k, c)
-		// default:
-		// 	return fmt.Errorf("unrecognized treasury proposal content type: %T", c)
-		// }
-		return fmt.Errorf("treasury spend proposal handler not yet integrated (pending proto regen)")
+		switch c := content.(type) {
+		case *types.TreasurySpendProposal:
+			return HandleTreasurySpendProposal(ctx, k, c)
+		default:
+			return fmt.Errorf("unrecognized treasury proposal content type: %T", c)
+		}
 	}
 }
 

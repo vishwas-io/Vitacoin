@@ -18,25 +18,25 @@ import (
 // All treasury spending is tracked for transparency and auditability
 type TreasurySpending struct {
 	// Unique identifier for this spending record
-	Id string `json:"id"`
+	Id string `json:"id" protobuf:"bytes,1,opt,name=id,proto3"`
 	
 	// Governance proposal ID that authorized this spending
-	ProposalId uint64 `json:"proposal_id"`
+	ProposalId uint64 `json:"proposal_id" protobuf:"varint,2,opt,name=proposal_id,json=proposalId,proto3"`
 	
 	// Recipient address that received the funds
-	Recipient string `json:"recipient"`
+	Recipient string `json:"recipient" protobuf:"bytes,3,opt,name=recipient,proto3"`
 	
 	// Amount sent to recipient
-	Amount sdk.Coins `json:"amount"`
+	Amount sdk.Coins `json:"amount" protobuf:"bytes,4,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins"`
 	
 	// Purpose of the spending (description from proposal)
-	Purpose string `json:"purpose"`
+	Purpose string `json:"purpose" protobuf:"bytes,5,opt,name=purpose,proto3"`
 	
 	// Block height when spending occurred
-	SpentHeight int64 `json:"spent_height"`
+	SpentHeight int64 `json:"spent_height" protobuf:"varint,6,opt,name=spent_height,json=spentHeight,proto3"`
 	
 	// Unix timestamp when spending occurred
-	SpentTime int64 `json:"spent_time"`
+	SpentTime int64 `json:"spent_time" protobuf:"varint,7,opt,name=spent_time,json=spentTime,proto3"`
 }
 
 // Validate performs validation on TreasurySpending
@@ -188,8 +188,8 @@ type TreasurySpendProposal struct {
 	Amount sdk.Coins `json:"amount"`
 }
 
-// ValidateBasic performs basic validation
-func (tsp TreasurySpendProposal) ValidateBasic() error {
+// ValidateBasicValue is kept for backward compat but prefer pointer receiver
+func (tsp TreasurySpendProposal) ValidateBasicValue() error {
 	if tsp.Title == "" {
 		return fmt.Errorf("proposal title cannot be empty")
 	}
@@ -210,7 +210,7 @@ func (tsp TreasurySpendProposal) ValidateBasic() error {
 }
 
 // String returns a human-readable string representation
-func (tsp TreasurySpendProposal) String() string {
+func (tsp TreasurySpendProposal) StringValue() string {
 	return fmt.Sprintf(`TreasurySpendProposal:
   Title:       %s
   Description: %s
@@ -219,14 +219,45 @@ func (tsp TreasurySpendProposal) String() string {
 		tsp.Title, tsp.Description, tsp.Recipient, tsp.Amount)
 }
 
-// ProposalRoute returns the routing key for the proposal
-func (tsp TreasurySpendProposal) ProposalRoute() string {
+// GetTitle returns the title of the proposal (satisfies govtypes.Content)
+func (tsp *TreasurySpendProposal) GetTitle() string { return tsp.Title }
+
+// GetDescription returns the description of the proposal (satisfies govtypes.Content)
+func (tsp *TreasurySpendProposal) GetDescription() string { return tsp.Description }
+
+// ProposalRoute returns the routing key for the proposal (satisfies govtypes.Content)
+func (tsp *TreasurySpendProposal) ProposalRoute() string {
 	return RouterKey
 }
 
-// ProposalType returns the type of the proposal
-func (tsp TreasurySpendProposal) ProposalType() string {
+// ProposalType returns the type of the proposal (satisfies govtypes.Content)
+func (tsp *TreasurySpendProposal) ProposalType() string {
 	return "TreasurySpend"
+}
+
+// ValidateBasic pointer receiver variant (satisfies govtypes.Content)
+func (tsp *TreasurySpendProposal) ValidateBasic() error {
+	if tsp.Title == "" {
+		return fmt.Errorf("proposal title cannot be empty")
+	}
+	if tsp.Description == "" {
+		return fmt.Errorf("proposal description cannot be empty")
+	}
+	if _, err := sdk.AccAddressFromBech32(tsp.Recipient); err != nil {
+		return fmt.Errorf("invalid recipient address: %w", err)
+	}
+	if !tsp.Amount.IsValid() || tsp.Amount.IsZero() {
+		return fmt.Errorf("invalid amount: %s", tsp.Amount)
+	}
+	return nil
+}
+
+// Reset/ProtoMessage/String for proto.Message interface
+func (tsp *TreasurySpendProposal) Reset()         {}
+func (tsp *TreasurySpendProposal) ProtoMessage()  {}
+func (tsp *TreasurySpendProposal) String() string {
+	return fmt.Sprintf("TreasurySpendProposal{Title:%s Recipient:%s Amount:%s}",
+		tsp.Title, tsp.Recipient, tsp.Amount)
 }
 
 // TreasuryImpactEstimate represents the estimated impact of a treasury spending
