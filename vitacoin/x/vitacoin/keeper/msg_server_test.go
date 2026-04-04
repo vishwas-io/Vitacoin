@@ -133,10 +133,10 @@ func (suite *KeeperTestSuite) TestMsgRegisterMerchant() {
 			msg: &types.MsgRegisterMerchant{
 				Sender:      "vita1mtr0sg00mnjg88darl39xgr88hnrvnwnhtpgrt",
 				BusinessName: "Low Stake Business",
-				StakeAmount:  math.NewInt(1000), // Too low
+				StakeAmount:  math.NewInt(999), // Below MinMerchantStake of 1000
 			},
 			expectErr: true,
-			errMsg:    "insufficient stake amount",
+			errMsg:    "less than minimum required",
 			setup: func() {
 				suite.keeper.DeleteMerchant(suite.ctx, "vita1mtr0sg00mnjg88darl39xgr88hnrvnwnhtpgrt")
 			},
