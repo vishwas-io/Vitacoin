@@ -26,11 +26,12 @@ import (
 type KeeperTestSuite struct {
 	suite.Suite
 
-	ctx    sdk.Context
-	keeper keeper.Keeper
-	cdc    codec.Codec
-	msgServer types.MsgServer
+	ctx         sdk.Context
+	keeper      keeper.Keeper
+	cdc         codec.Codec
+	msgServer   types.MsgServer
 	queryServer types.QueryServer
+	bankKeeper  *MockBankKeeper
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -62,19 +63,28 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
 
 	// Create keeper
+	suite.bankKeeper = NewMockBankKeeper()
 	suite.keeper = keeper.NewKeeper(
 		suite.cdc,
 		runtime.NewKVStoreService(storeKey),
 		log.NewNopLogger(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		suite.bankKeeper,
+		&MockAccountKeeper{},
 	)
 
 	// Create msg and query servers
 	suite.msgServer = keeper.NewMsgServerImpl(suite.keeper)
 	suite.queryServer = keeper.NewQueryServerImpl(suite.keeper)
 
-	// Set default params
-	err := suite.keeper.SetParams(suite.ctx, types.DefaultParams())
+	// Set test-friendly params (low stake/fee thresholds so unit tests can use small amounts)
+	testParams := types.DefaultParams()
+	testParams.MinMerchantStake = math.NewInt(1000)          // 1000 avita (not 1000 VITA)
+	testParams.MerchantRegistrationFee = math.NewInt(0)      // no reg fee in tests
+	testParams.TransactionFeePercent = math.LegacyNewDecWithPrec(1, 1) // 0.1%
+	testParams.MinProtocolFee = math.NewInt(0)
+	testParams.MaxProtocolFee = math.NewInt(1_000_000_000_000_000_000) // 1 VITA
+	err := suite.keeper.SetParams(suite.ctx, testParams)
 	require.NoError(suite.T(), err)
 }
 

@@ -1184,3 +1184,38 @@ func (suite *KeeperTestSuite) TestVaultRewardsCalculationThroughCreation() {
 		})
 	}
 }
+// TestRegisterMerchantFeeCollection tests that RegisterMerchant collects both the
+// registration fee and initial stake from the sender into the module account.
+func (suite *KeeperTestSuite) TestRegisterMerchantFeeCollection() {
+	ctx := sdk.UnwrapSDKContext(suite.ctx)
+
+	registrationFee := math.NewInt(5000)
+	stakeAmount := math.NewInt(10000)
+
+	// Set params with a non-zero registration fee
+	params, err := suite.keeper.GetParams(suite.ctx)
+	suite.Require().NoError(err)
+	params.MerchantRegistrationFee = registrationFee
+	params.MinMerchantStake = math.NewInt(1000)
+	err = suite.keeper.SetParams(suite.ctx, params)
+	suite.Require().NoError(err)
+
+	// Reset mock bank keeper tracking
+	suite.bankKeeper.ModuleBalances = make(map[string]map[string]math.Int)
+
+	msg := &types.MsgRegisterMerchant{
+		Sender:       "vita1tshzqh0puwkm8u2kj7mz2jek6gsylujn3qaq3f",
+		BusinessName: "Test Shop",
+		StakeAmount:  stakeAmount,
+	}
+
+	_, err = suite.msgServer.RegisterMerchant(ctx, msg)
+	suite.Require().NoError(err)
+
+	// Module should have received: registrationFee + stakeAmount
+	expected := registrationFee.Add(stakeAmount)
+	actual := suite.bankKeeper.GetModuleBalance("vitacoin", "avita")
+	suite.Require().Equal(expected, actual,
+		"module account balance should equal registration fee (%s) + stake (%s) = %s, got %s",
+		registrationFee, stakeAmount, expected, actual)
+}

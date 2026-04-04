@@ -69,7 +69,9 @@ func (ms msgServer) RegisterMerchant(ctx context.Context, msg *types.MsgRegister
 	if msg.BusinessName == "" {
 		return nil, fmt.Errorf("business name cannot be empty")
 	}
-
+	if len(msg.BusinessName) > 100 {
+		return nil, fmt.Errorf("invalid business name: too long (max 100 chars)")
+	}
 	// Get params
 	params, err := ms.Keeper.GetParams(ctx)
 	if err != nil {
@@ -82,8 +84,26 @@ func (ms msgServer) RegisterMerchant(ctx context.Context, msg *types.MsgRegister
 			msg.StakeAmount.String(), params.MinMerchantStake.String())
 	}
 
-	// TODO Phase 3: Collect registration fee + stake amount from sender
-	// For now, just create the merchant record
+	// Phase 3: Collect registration fee from sender (if non-zero)
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sender address for fee collection: %w", err)
+	}
+
+	if !params.MerchantRegistrationFee.IsZero() {
+		feeCoins := sdk.NewCoins(sdk.NewCoin("avita", params.MerchantRegistrationFee))
+		if err := ms.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, feeCoins); err != nil {
+			return nil, fmt.Errorf("failed to collect merchant registration fee: %w", err)
+		}
+	}
+
+	// Phase 3: Collect initial stake from sender
+	if !msg.StakeAmount.IsZero() {
+		stakeCoins := sdk.NewCoins(sdk.NewCoin("avita", msg.StakeAmount))
+		if err := ms.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, stakeCoins); err != nil {
+			return nil, fmt.Errorf("failed to collect merchant stake: %w", err)
+		}
+	}
 
 	// Calculate merchant tier based on stake amount
 	tier := ms.Keeper.calculateMerchantTier(msg.StakeAmount)
@@ -134,18 +154,39 @@ func (ms msgServer) UpdateMerchant(ctx context.Context, msg *types.MsgUpdateMerc
 		return nil, fmt.Errorf("merchant not found: %w", err)
 	}
 
-	// Update business name if provided
+	// Update business name if provided (empty means no change, but explicitly validate if given)
 	if msg.BusinessName != "" {
+		if len(msg.BusinessName) > 100 {
+			return nil, fmt.Errorf("invalid business name: too long (max 100 chars)")
+		}
 		merchant.BusinessName = msg.BusinessName
 	}
+	// Note: empty BusinessName means "no change" (not an error)
 
 	// Add additional stake if provided
 	if !msg.AdditionalStake.IsZero() {
 		if msg.AdditionalStake.IsNegative() {
 			return nil, fmt.Errorf("additional stake cannot be negative")
 		}
-		// TODO Phase 3: Collect additional stake from sender
-		merchant.StakeAmount = merchant.StakeAmount.Add(msg.AdditionalStake)
+		params, err := ms.Keeper.GetParams(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get params: %w", err)
+		}
+		newStake := merchant.StakeAmount.Add(msg.AdditionalStake)
+		if newStake.LT(params.MinMerchantStake) {
+			return nil, fmt.Errorf("insufficient stake amount: total stake %s is less than minimum required %s",
+				newStake, params.MinMerchantStake)
+		}
+		// Phase 3: Collect additional stake from sender
+		senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+		if err != nil {
+			return nil, fmt.Errorf("invalid sender address for stake collection: %w", err)
+		}
+		stakeCoins := sdk.NewCoins(sdk.NewCoin("avita", msg.AdditionalStake))
+		if err := ms.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, stakeCoins); err != nil {
+			return nil, fmt.Errorf("failed to collect additional stake: %w", err)
+		}
+		merchant.StakeAmount = newStake
 	}
 	
 	// Always recalculate tier based on current stake amount (whether updated or not)
