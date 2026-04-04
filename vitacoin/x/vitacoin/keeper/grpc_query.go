@@ -7,7 +7,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	query "github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/cosmos/cosmos-sdk/runtime"
 
 	"github.com/vitacoin/vitacoin/vitacoin/x/vitacoin/types"
 )
@@ -70,14 +73,25 @@ func (q queryServer) MerchantAll(ctx context.Context, req *types.QueryAllMerchan
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	merchants, err := q.Keeper.GetAllMerchants(ctx)
+	kvStore := q.Keeper.storeService.OpenKVStore(ctx)
+	prefixStore := prefix.NewStore(runtime.KVStoreAdapter(kvStore), types.MerchantKeyPrefix)
+
+	var merchants []types.Merchant
+	pageRes, err := query.Paginate(prefixStore, req.Pagination, func(key []byte, value []byte) error {
+		var merchant types.Merchant
+		if err := q.Keeper.cdc.Unmarshal(value, &merchant); err != nil {
+			return err
+		}
+		merchants = append(merchants, merchant)
+		return nil
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &types.QueryAllMerchantResponse{
 		Merchants:  merchants,
-		Pagination: nil, // TODO: Implement pagination in Phase 3
+		Pagination: pageRes,
 	}, nil
 }
 
@@ -107,14 +121,25 @@ func (q queryServer) PaymentAll(ctx context.Context, req *types.QueryAllPaymentR
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	payments, err := q.Keeper.GetAllPayments(ctx)
+	kvStore := q.Keeper.storeService.OpenKVStore(ctx)
+	prefixStore := prefix.NewStore(runtime.KVStoreAdapter(kvStore), types.PaymentKeyPrefix)
+
+	var payments []types.Payment
+	pageRes, err := query.Paginate(prefixStore, req.Pagination, func(key []byte, value []byte) error {
+		var payment types.Payment
+		if err := q.Keeper.cdc.Unmarshal(value, &payment); err != nil {
+			return err
+		}
+		payments = append(payments, payment)
+		return nil
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &types.QueryAllPaymentResponse{
 		Payments:   payments,
-		Pagination: nil, // TODO: Implement pagination in Phase 3
+		Pagination: pageRes,
 	}, nil
 }
 
@@ -144,14 +169,25 @@ func (q queryServer) VaultAll(ctx context.Context, req *types.QueryAllVaultReque
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	vaults, err := q.Keeper.GetAllVaults(ctx)
+	kvStore := q.Keeper.storeService.OpenKVStore(ctx)
+	prefixStore := prefix.NewStore(runtime.KVStoreAdapter(kvStore), types.VaultKeyPrefix)
+
+	var vaults []types.Vault
+	pageRes, err := query.Paginate(prefixStore, req.Pagination, func(key []byte, value []byte) error {
+		var vault types.Vault
+		if err := q.Keeper.cdc.Unmarshal(value, &vault); err != nil {
+			return err
+		}
+		vaults = append(vaults, vault)
+		return nil
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &types.QueryAllVaultResponse{
 		Vaults:     vaults,
-		Pagination: nil, // TODO: Implement pagination in Phase 3
+		Pagination: pageRes,
 	}, nil
 }
 
@@ -181,13 +217,24 @@ func (q queryServer) RewardPoolAll(ctx context.Context, req *types.QueryAllRewar
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	pools, err := q.Keeper.GetAllRewardPools(ctx)
+	kvStore := q.Keeper.storeService.OpenKVStore(ctx)
+	prefixStore := prefix.NewStore(runtime.KVStoreAdapter(kvStore), types.RewardPoolKeyPrefix)
+
+	var pools []types.RewardPool
+	pageRes, err := query.Paginate(prefixStore, req.Pagination, func(key []byte, value []byte) error {
+		var pool types.RewardPool
+		if err := q.Keeper.cdc.Unmarshal(value, &pool); err != nil {
+			return err
+		}
+		pools = append(pools, pool)
+		return nil
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &types.QueryAllRewardPoolResponse{
 		Pools:      pools,
-		Pagination: nil, // TODO: Implement pagination in Phase 3
+		Pagination: pageRes,
 	}, nil
 }
