@@ -223,25 +223,62 @@ func (ms msgServer) ValidateTransaction(ctx context.Context, msgType, senderAddr
 	return nil
 }
 
-// Anti-spam and rate limiting (basic implementation)
+// Anti-spam and rate limiting — real KV-store-backed implementation.
+//
+// Configuration:
+//   - MinBlocksBetweenTx is stored at RateLimitConfigKey (default 0 = disabled).
+//   - Last tx block height per address is stored at RateLimitKeyPrefix+<address>.
+//
+// Behaviour:
+//   - If MinBlocksBetweenTx == 0 → no rate limit enforced.
+//   - If currentBlock - lastBlock < MinBlocksBetweenTx → reject with ErrRequestTooFrequent.
+//   - On success, the last-tx-block for the address is updated to currentBlock.
 func (ms msgServer) ValidateTransactionFrequency(ctx context.Context, senderAddr string) error {
-	// This is a basic implementation - in production, you would track this in state
-	// or use external rate limiting mechanisms
-	
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	
-	// Simple check: ensure block height is progressing (prevents same-block spam)
-	if sdkCtx.BlockHeight() < 1 {
+	currentBlock := sdkCtx.BlockHeight()
+
+	if currentBlock < 1 {
 		return sdkerrors.ErrInvalidRequest.Wrap("invalid block height for transaction")
 	}
-	
-	// TODO: Implement proper rate limiting with state tracking
-	// This would involve:
-	// 1. Tracking last transaction time per address
-	// 2. Enforcing minimum time between transactions
-	// 3. Implementing sliding window rate limiting
-	// 4. Different limits for different message types
-	
+
+	// Retrieve configured minimum gap (0 = disabled).
+	minBlocks, err := ms.Keeper.GetMinBlocksBetweenTx(ctx)
+	if err != nil {
+		// Non-fatal: if config is unreadable, allow the transaction through.
+		ms.Keeper.logger.Error("rate limit: failed to read MinBlocksBetweenTx", "error", err)
+		return nil
+	}
+
+	if minBlocks == 0 {
+		// Rate limiting disabled — update last-tx record and proceed.
+		_ = ms.Keeper.SetLastTxBlock(ctx, senderAddr, currentBlock)
+		return nil
+	}
+
+	// Read the last block at which this sender transacted.
+	lastBlock, err := ms.Keeper.GetLastTxBlock(ctx, senderAddr)
+	if err != nil {
+		ms.Keeper.logger.Error("rate limit: failed to read last tx block", "address", senderAddr, "error", err)
+		// Allow through on read errors to avoid locking legitimate users.
+		return nil
+	}
+
+	if lastBlock > 0 {
+		blocksSinceLast := currentBlock - lastBlock
+		if blocksSinceLast < int64(minBlocks) {
+			return sdkerrors.ErrTxInMempoolCache.Wrapf(
+				"transaction too frequent: must wait %d blocks between transactions, only %d blocks since last (address: %s)",
+				minBlocks, blocksSinceLast, senderAddr,
+			)
+		}
+	}
+
+	// Record this transaction block height.
+	if err := ms.Keeper.SetLastTxBlock(ctx, senderAddr, currentBlock); err != nil {
+		// Log but don't fail the transaction — record-write failure is non-critical.
+		ms.Keeper.logger.Error("rate limit: failed to write last tx block", "address", senderAddr, "error", err)
+	}
+
 	return nil
 }
 

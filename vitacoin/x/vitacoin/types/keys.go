@@ -55,6 +55,12 @@ var (
 	
 	// TreasurySpendingKeyPrefix is the prefix for treasury spending records
 	TreasurySpendingKeyPrefix = []byte{0x0B}
+
+	// RateLimitKeyPrefix is the prefix for per-address rate limit tracking (last tx block height)
+	RateLimitKeyPrefix = []byte{0x0C}
+
+	// RateLimitConfigKey stores the MinBlocksBetweenTx config value
+	RateLimitConfigKey = []byte{0x0D}
 )
 
 // GetMerchantKey returns the store key for a specific merchant
@@ -82,4 +88,9 @@ func GetRewardPoolKey(id string) []byte {
 // GetTreasurySpendingKey returns the store key for a treasury spending record
 func GetTreasurySpendingKey(id string) []byte {
 	return append(TreasurySpendingKeyPrefix, []byte(id)...)
+}
+
+// GetRateLimitKey returns the store key for a per-address last-tx-block record
+func GetRateLimitKey(address string) []byte {
+	return append(RateLimitKeyPrefix, []byte(address)...)
 }
