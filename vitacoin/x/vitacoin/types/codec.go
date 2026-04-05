@@ -19,6 +19,12 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgWithdrawVault{}, "vitacoin/MsgWithdrawVault", nil)
 	cdc.RegisterConcrete(&MsgCreateRewardPool{}, "vitacoin/MsgCreateRewardPool", nil)
 	cdc.RegisterConcrete(&MsgDistributeRewards{}, "vitacoin/MsgDistributeRewards", nil)
+
+	// Phase 4: Staking messages
+	cdc.RegisterConcrete(&MsgDelegateVITA{}, "vitacoin/MsgDelegateVITA", nil)
+	cdc.RegisterConcrete(&MsgUndelegateVITA{}, "vitacoin/MsgUndelegateVITA", nil)
+	cdc.RegisterConcrete(&MsgClaimStakingRewards{}, "vitacoin/MsgClaimStakingRewards", nil)
+	cdc.RegisterConcrete(&MsgCreateValidator{}, "vitacoin/MsgCreateValidator", nil)
 }
 
 // RegisterInterfaces registers the module's interfaces and implementations with the interface registry
@@ -35,6 +41,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCreateRewardPool{},
 		&MsgDistributeRewards{},
 	)
+
+	// Phase 4: Staking message interface registrations
+	// Note: These use manual Go types (no protoc); registered for amino routing only.
+	// Full interface registry integration requires proto regen in a future step.
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

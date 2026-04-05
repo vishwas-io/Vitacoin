@@ -15,6 +15,26 @@ const (
 
 	// TreasuryModuleName defines the treasury module account name
 	TreasuryModuleName = "vitacoin_treasury"
+
+	// BondDenom is the staking bond denomination for VitaCoin
+	BondDenom = "avita"
+
+	// Phase 4: Staking Store Key Prefixes (as byte constants)
+	StakingDelegationPrefixByte = 0x10
+	StakingUnbondingPrefixByte  = 0x11
+	StakingValidatorPrefixByte  = 0x12
+)
+
+// Phase 4: Staking store keys
+var (
+	// DelegationKeyPrefix is the prefix for delegation records
+	DelegationKeyPrefix = []byte{StakingDelegationPrefixByte}
+
+	// UnbondingKeyPrefix is the prefix for unbonding queue entries
+	UnbondingKeyPrefix = []byte{StakingUnbondingPrefixByte}
+
+	// ValidatorKeyPrefix is the prefix for validator records
+	ValidatorKeyPrefix = []byte{StakingValidatorPrefixByte}
 )
 
 // Store key prefixes
