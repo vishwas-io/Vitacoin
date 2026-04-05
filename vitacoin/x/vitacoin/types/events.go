@@ -47,6 +47,11 @@ const (
 	// Phase 3 Task 3.4: Treasury Events
 	EventTypeTreasurySpent       = "treasury_spent"
 	EventTypeTreasuryProposal    = "treasury_proposal"
+
+	// Phase 4: Staking Events
+	EventTypeDelegation   = "delegation"
+	EventTypeUnbonding    = "unbonding"
+	EventTypeUnbondingReleased = "unbonding_released"
 )
 
 // Attribute keys for events
@@ -130,6 +135,13 @@ const (
 	AttributeKeyPurpose           = "purpose"
 	AttributeKeyTreasuryBalance   = "treasury_balance"
 	AttributeKeySpendingId        = "spending_id"
+
+	// Phase 4: Staking Attributes
+	AttributeKeyDelegator        = "delegator"
+	AttributeKeyValidator        = "validator"
+	AttributeKeyDelegationAmount = "delegation_amount"
+	AttributeKeyMaturityBlock    = "maturity_block"
+	AttributeKeyStartBlock       = "start_block"
 )
 
 // CreateTransactionEvent is emitted when a new transaction is created.

@@ -114,3 +114,33 @@ func GetTreasurySpendingKey(id string) []byte {
 func GetRateLimitKey(address string) []byte {
 	return append(RateLimitKeyPrefix, []byte(address)...)
 }
+
+// Phase 4: Staking Key Getters
+
+// GetDelegationKey returns the store key for a delegation record.
+// Key format: DelegationKeyPrefix | delegatorAddr | validatorAddr
+func GetDelegationKey(delegatorAddr, validatorAddr string) []byte {
+	key := append(DelegationKeyPrefix, []byte(delegatorAddr)...)
+	key = append(key, []byte(":")...)
+	return append(key, []byte(validatorAddr)...)
+}
+
+// GetUnbondingKey returns the store key for an unbonding queue entry.
+// Key format: UnbondingKeyPrefix | delegatorAddr | validatorAddr | maturityBlock (8 bytes big-endian)
+func GetUnbondingKey(delegatorAddr, validatorAddr string, maturityBlock int64) []byte {
+	key := append(UnbondingKeyPrefix, []byte(delegatorAddr)...)
+	key = append(key, []byte(":")...)
+	key = append(key, []byte(validatorAddr)...)
+	key = append(key, []byte(":")...)
+	// Encode maturityBlock as 8-byte big-endian for lexicographic ordering
+	blockBytes := make([]byte, 8)
+	blockBytes[0] = byte(maturityBlock >> 56)
+	blockBytes[1] = byte(maturityBlock >> 48)
+	blockBytes[2] = byte(maturityBlock >> 40)
+	blockBytes[3] = byte(maturityBlock >> 32)
+	blockBytes[4] = byte(maturityBlock >> 24)
+	blockBytes[5] = byte(maturityBlock >> 16)
+	blockBytes[6] = byte(maturityBlock >> 8)
+	blockBytes[7] = byte(maturityBlock)
+	return append(key, blockBytes...)
+}
