@@ -199,3 +199,17 @@ type UpdateTransactionEvent struct {
 type DeleteTransactionEvent struct {
 	TransactionID string
 }
+const (
+	// Phase 5: Governance — voting, tally, execution events
+	EventTypeVoteCast         = "vote_cast"
+	EventTypeProposalTallied  = "proposal_tallied"
+	EventTypeProposalExecuted = "proposal_executed"
+
+	// Phase 5: Governance — vote / tally attributes
+	AttributeKeyVoter          = "voter"
+	AttributeKeyVoteOption     = "vote_option"
+	AttributeKeyVoteWeight     = "vote_weight"
+	AttributeKeyTallyPassed    = "passed"
+	AttributeKeyTallyReason    = "tally_reason"
+	AttributeKeyExecutionError = "execution_error"
+)

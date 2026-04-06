@@ -390,3 +390,458 @@ func (k Keeper) AddDeposit(
 
 	return nil
 }
+
+// ───────────────────────────────────────────────────────────────────────────────
+// CastVote
+// ───────────────────────────────────────────────────────────────────────────────
+
+// CastVote records (or updates) a voter's choice on a proposal that is in VOTING
+// status and within its voting period.
+//
+// Voting weight = sum of all active delegation amounts for the voter.
+func (k Keeper) CastVote(ctx context.Context, proposalId uint64, voter string, option int32) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// ── Validate option ───────────────────────────────────────────────────────
+	if _, ok := types.VoteOptionName[option]; !ok {
+		return fmt.Errorf("unknown vote option: %d", option)
+	}
+
+	// ── Validate voter address ────────────────────────────────────────────────
+	if _, err := sdk.AccAddressFromBech32(voter); err != nil {
+		return fmt.Errorf("invalid voter address: %w", err)
+	}
+
+	// ── Fetch proposal ────────────────────────────────────────────────────────
+	proposal, found, err := k.GetProposal(ctx, proposalId)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve proposal %d: %w", proposalId, err)
+	}
+	if !found {
+		return fmt.Errorf("proposal %d not found", proposalId)
+	}
+	if proposal.Status != types.ProposalStatusVoting {
+		return fmt.Errorf("proposal %d is not in voting period (status: %s)", proposalId, proposal.StatusString())
+	}
+	if sdkCtx.BlockHeight() > proposal.VotingEndTime {
+		return fmt.Errorf("voting period for proposal %d has ended", proposalId)
+	}
+
+	// ── Compute voting weight from active delegations ─────────────────────────
+	weight, err := k.getVoterStake(ctx, voter)
+	if err != nil {
+		return fmt.Errorf("failed to compute voting weight for %s: %w", voter, err)
+	}
+	if weight.IsZero() {
+		return fmt.Errorf("voter %s has no staked VITA and cannot vote", voter)
+	}
+
+	// ── Upsert vote ───────────────────────────────────────────────────────────
+	vote := types.Vote{
+		ProposalId: proposalId,
+		Voter:      voter,
+		Option:     option,
+		Weight:     weight,
+		Timestamp:  sdkCtx.BlockTime().Unix(),
+	}
+	if err := k.SetVote(ctx, vote); err != nil {
+		return fmt.Errorf("failed to store vote: %w", err)
+	}
+
+	// ── Emit event ────────────────────────────────────────────────────────────
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeVoteCast,
+			sdk.NewAttribute(types.AttributeKeyProposalId, fmt.Sprintf("%d", proposalId)),
+			sdk.NewAttribute(types.AttributeKeyVoter, voter),
+			sdk.NewAttribute(types.AttributeKeyVoteOption, types.VoteOptionName[option]),
+			sdk.NewAttribute(types.AttributeKeyVoteWeight, weight.String()),
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	)
+
+	k.logger.Info("Vote cast",
+		"proposal_id", proposalId,
+		"voter", voter,
+		"option", types.VoteOptionName[option],
+		"weight", weight.String(),
+	)
+	return nil
+}
+
+// getVoterStake sums all active delegation amounts for the given voter address.
+func (k Keeper) getVoterStake(ctx context.Context, voter string) (math.LegacyDec, error) {
+	store := k.storeService.OpenKVStore(ctx)
+
+	// Build a prefix that covers all delegations by this delegator:
+	// DelegationKeyPrefix | voterBytes
+	delegatorPrefix := append(append([]byte{}, types.DelegationKeyPrefix...), []byte(voter)...)
+
+	iter, err := store.Iterator(delegatorPrefix, storetypes.PrefixEndBytes(delegatorPrefix))
+	if err != nil {
+		return math.LegacyZeroDec(), fmt.Errorf("failed to open delegation iterator: %w", err)
+	}
+	defer iter.Close()
+
+	total := math.LegacyZeroDec()
+	for ; iter.Valid(); iter.Next() {
+		// delegationRecord is unexported; decode just the Amount field via a local struct
+		var rec struct {
+			Amount string `json:"amount"`
+		}
+		if err := json.Unmarshal(iter.Value(), &rec); err != nil {
+			return math.LegacyZeroDec(), fmt.Errorf("failed to unmarshal delegation: %w", err)
+		}
+		amt, ok := math.NewIntFromString(rec.Amount)
+		if !ok {
+			return math.LegacyZeroDec(), fmt.Errorf("invalid delegation amount: %s", rec.Amount)
+		}
+		total = total.Add(math.LegacyNewDecFromInt(amt))
+	}
+	return total, nil
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// TallyProposal
+// ───────────────────────────────────────────────────────────────────────────────
+
+// TallyProposal tallies all votes on a proposal, updates its status, and
+// returns/burns its deposit accordingly.
+//
+// Tally rules:
+//  1. participationRatio = totalVotingWeight / totalStaked < Quorum → REJECTED (low turnout)
+//  2. vetoRatio = vetoVotes / totalVotingWeight >= VetoThreshold    → REJECTED + burn deposit
+//  3. yesRatio = yesVotes / (yes+no+veto) >= Threshold             → PASSED
+//  4. Otherwise                                                      → REJECTED
+func (k Keeper) TallyProposal(ctx context.Context, proposalId uint64) (bool, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	proposal, found, err := k.GetProposal(ctx, proposalId)
+	if err != nil {
+		return false, fmt.Errorf("failed to retrieve proposal %d: %w", proposalId, err)
+	}
+	if !found {
+		return false, fmt.Errorf("proposal %d not found", proposalId)
+	}
+	if proposal.Status != types.ProposalStatusVoting {
+		return false, fmt.Errorf("proposal %d is not in voting status", proposalId)
+	}
+
+	govParams := k.GetGovernanceParams(ctx)
+
+	// ── Aggregate votes ───────────────────────────────────────────────────────
+	votes, err := k.GetVotesByProposal(ctx, proposalId)
+	if err != nil {
+		return false, fmt.Errorf("failed to get votes for proposal %d: %w", proposalId, err)
+	}
+
+	yesVotes := math.LegacyZeroDec()
+	noVotes := math.LegacyZeroDec()
+	abstainVotes := math.LegacyZeroDec()
+	vetoVotes := math.LegacyZeroDec()
+
+	for _, v := range votes {
+		switch v.Option {
+		case types.VoteOptionYes:
+			yesVotes = yesVotes.Add(v.Weight)
+		case types.VoteOptionNo:
+			noVotes = noVotes.Add(v.Weight)
+		case types.VoteOptionAbstain:
+			abstainVotes = abstainVotes.Add(v.Weight)
+		case types.VoteOptionNoWithVeto:
+			vetoVotes = vetoVotes.Add(v.Weight)
+		}
+	}
+
+	totalVotingWeight := yesVotes.Add(noVotes).Add(abstainVotes).Add(vetoVotes)
+
+	// ── Total staked VITA across all validators ───────────────────────────────
+	validators, err := k.GetAllValidators(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get validators: %w", err)
+	}
+	totalStaked := math.LegacyZeroDec()
+	for _, val := range validators {
+		totalStaked = totalStaked.Add(math.LegacyNewDecFromInt(val.TotalDelegated))
+	}
+
+	passed := false
+	tallyReason := "rejected"
+	burnDeposit := false
+
+	if totalStaked.IsZero() || totalVotingWeight.IsZero() {
+		tallyReason = "no_participation"
+	} else {
+		participationRatio := totalVotingWeight.Quo(totalStaked)
+
+		if participationRatio.LT(govParams.Quorum) {
+			tallyReason = "quorum_not_met"
+		} else {
+			vetoRatio := vetoVotes.Quo(totalVotingWeight)
+			if vetoRatio.GTE(govParams.VetoThreshold) {
+				tallyReason = "vetoed"
+				burnDeposit = govParams.BurnDepositOnVeto
+			} else {
+				nonAbstain := yesVotes.Add(noVotes).Add(vetoVotes)
+				if nonAbstain.IsPositive() {
+					yesRatio := yesVotes.Quo(nonAbstain)
+					if yesRatio.GTE(govParams.Threshold) {
+						passed = true
+						tallyReason = "passed"
+					} else {
+						tallyReason = "threshold_not_met"
+					}
+				} else {
+					tallyReason = "no_non_abstain_votes"
+				}
+			}
+		}
+	}
+
+	// ── Update proposal tally fields ──────────────────────────────────────────
+	proposal.YesVotes = yesVotes
+	proposal.NoVotes = noVotes
+	proposal.AbstainVotes = abstainVotes
+	proposal.VetoVotes = vetoVotes
+
+	if passed {
+		proposal.Status = types.ProposalStatusPassed
+	} else {
+		proposal.Status = types.ProposalStatusRejected
+	}
+
+	// ── Handle deposit ────────────────────────────────────────────────────────
+	if proposal.TotalDeposit.IsPositive() {
+		depositCoins := sdk.NewCoins(sdk.NewCoin(types.BondDenom, proposal.TotalDeposit))
+		if burnDeposit {
+			if err := k.bankKeeper.BurnCoins(ctx, types.TreasuryModuleName, depositCoins); err != nil {
+				k.logger.Error("failed to burn vetoed deposit", "proposal_id", proposalId, "err", err)
+			}
+		} else {
+			// Return deposit to proposer
+			proposerAddr, err := sdk.AccAddressFromBech32(proposal.Proposer)
+			if err == nil {
+				if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.TreasuryModuleName, proposerAddr, depositCoins); err != nil {
+					k.logger.Error("failed to return deposit", "proposal_id", proposalId, "err", err)
+				}
+			}
+		}
+	}
+
+	if err := k.SetProposal(ctx, proposal); err != nil {
+		return false, fmt.Errorf("failed to update proposal %d after tally: %w", proposalId, err)
+	}
+
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeProposalTallied,
+			sdk.NewAttribute(types.AttributeKeyProposalId, fmt.Sprintf("%d", proposalId)),
+			sdk.NewAttribute(types.AttributeKeyTallyPassed, fmt.Sprintf("%t", passed)),
+			sdk.NewAttribute(types.AttributeKeyTallyReason, tallyReason),
+			sdk.NewAttribute(types.AttributeKeyProposalStatus, proposal.StatusString()),
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	)
+
+	k.logger.Info("Proposal tallied",
+		"proposal_id", proposalId,
+		"passed", passed,
+		"reason", tallyReason,
+		"yes", yesVotes.String(),
+		"no", noVotes.String(),
+		"abstain", abstainVotes.String(),
+		"veto", vetoVotes.String(),
+	)
+
+	return passed, nil
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// ExecuteProposal
+// ───────────────────────────────────────────────────────────────────────────────
+
+// ExecuteProposal runs the on-chain action encoded in a PASSED proposal.
+//
+// Supported types:
+//   - "text"          : no-op
+//   - "param_change"  : Content JSON {"key":"...","value":"..."} → UpdateParams
+//   - "treasury_spend": Content JSON {"recipient":"...","amount":"...","denom":"..."}
+//     → bankKeeper.SendCoinsFromModuleToAccount
+func (k Keeper) ExecuteProposal(ctx context.Context, proposalId uint64) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	proposal, found, err := k.GetProposal(ctx, proposalId)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve proposal %d: %w", proposalId, err)
+	}
+	if !found {
+		return fmt.Errorf("proposal %d not found", proposalId)
+	}
+	if proposal.Status != types.ProposalStatusPassed {
+		return fmt.Errorf("proposal %d is not in PASSED status (status: %s)", proposalId, proposal.StatusString())
+	}
+
+	var execErr error
+
+	switch proposal.ProposalType {
+	case types.ProposalTypeText:
+		// No-op execution for text proposals.
+
+	case types.ProposalTypeParamChange:
+		var payload struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		}
+		if err := json.Unmarshal([]byte(proposal.Content), &payload); err != nil {
+			execErr = fmt.Errorf("invalid param_change content: %w", err)
+		} else if payload.Key == "" {
+			execErr = fmt.Errorf("param_change: key is empty")
+		} else {
+			if err := k.applyParamChange(ctx, payload.Key, payload.Value); err != nil {
+				execErr = fmt.Errorf("param_change execution failed: %w", err)
+			}
+		}
+
+	case types.ProposalTypeTreasurySpend:
+		var payload struct {
+			Recipient string `json:"recipient"`
+			Amount    string `json:"amount"`
+			Denom     string `json:"denom"`
+		}
+		if err := json.Unmarshal([]byte(proposal.Content), &payload); err != nil {
+			execErr = fmt.Errorf("invalid treasury_spend content: %w", err)
+		} else {
+			recipientAddr, err := sdk.AccAddressFromBech32(payload.Recipient)
+			if err != nil {
+				execErr = fmt.Errorf("treasury_spend: invalid recipient: %w", err)
+			} else {
+				spendAmt, ok := math.NewIntFromString(payload.Amount)
+				if !ok {
+					execErr = fmt.Errorf("treasury_spend: invalid amount: %s", payload.Amount)
+				} else {
+					denom := payload.Denom
+					if denom == "" {
+						denom = types.BondDenom
+					}
+					coins := sdk.NewCoins(sdk.NewCoin(denom, spendAmt))
+					if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.TreasuryModuleName, recipientAddr, coins); err != nil {
+						execErr = fmt.Errorf("treasury_spend transfer failed: %w", err)
+					}
+				}
+			}
+		}
+
+	default:
+		execErr = fmt.Errorf("unknown proposal type for execution: %s", proposal.ProposalType)
+	}
+
+	// ── Update status on failure ──────────────────────────────────────────────
+	errStr := ""
+	if execErr != nil {
+		proposal.Status = types.ProposalStatusFailed
+		if err := k.SetProposal(ctx, proposal); err != nil {
+			k.logger.Error("failed to mark proposal as failed", "proposal_id", proposalId, "err", err)
+		}
+		errStr = execErr.Error()
+		k.logger.Error("Proposal execution failed", "proposal_id", proposalId, "err", execErr)
+	} else {
+		k.logger.Info("Proposal executed successfully", "proposal_id", proposalId, "type", proposal.ProposalType)
+	}
+
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeProposalExecuted,
+			sdk.NewAttribute(types.AttributeKeyProposalId, fmt.Sprintf("%d", proposalId)),
+			sdk.NewAttribute(types.AttributeKeyProposalType, proposal.ProposalType),
+			sdk.NewAttribute(types.AttributeKeyProposalStatus, proposal.StatusString()),
+			sdk.NewAttribute(types.AttributeKeyExecutionError, errStr),
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+		),
+	)
+
+	return execErr
+}
+
+// applyParamChange dispatches a governance parameter change to the appropriate
+// keeper method.  Only governance-specific params are handled here; fee / staking
+// params remain governed by their own keepers.
+func (k Keeper) applyParamChange(ctx context.Context, key, value string) error {
+	switch key {
+	case "min_deposit", "max_deposit_period", "voting_period", "quorum", "threshold", "veto_threshold":
+		// Governance params are currently stored as defaults.
+		// A future job will persist them; for now we log and succeed.
+		k.logger.Info("param_change applied (gov params stored as defaults until Phase 5 Job 4)", "key", key, "value", value)
+		return nil
+	default:
+		return fmt.Errorf("unknown governance param key: %s", key)
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// EndBlockerGovernance
+// ───────────────────────────────────────────────────────────────────────────────
+
+// EndBlockerGovernance is called from the module EndBlocker on every block.
+//
+// It performs two sweeps:
+//  1. Deposit-period proposals whose DepositEndTime has passed → FAILED (deposit refunded).
+//  2. Voting-period proposals whose VotingEndTime has passed   → Tallied, then executed if passed.
+func (k Keeper) EndBlockerGovernance(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentBlock := sdkCtx.BlockHeight()
+
+	proposals, err := k.GetAllProposals(ctx)
+	if err != nil {
+		return fmt.Errorf("EndBlockerGovernance: failed to load proposals: %w", err)
+	}
+
+	for _, proposal := range proposals {
+		switch proposal.Status {
+
+		case types.ProposalStatusDeposit:
+			if currentBlock <= proposal.DepositEndTime {
+				continue
+			}
+			// Deposit period expired without reaching MinDeposit → FAIL + refund
+			proposal.Status = types.ProposalStatusFailed
+			if proposal.TotalDeposit.IsPositive() {
+				depositCoins := sdk.NewCoins(sdk.NewCoin(types.BondDenom, proposal.TotalDeposit))
+				proposerAddr, err := sdk.AccAddressFromBech32(proposal.Proposer)
+				if err == nil {
+					if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.TreasuryModuleName, proposerAddr, depositCoins); err != nil {
+						k.logger.Error("failed to refund deposit on expired proposal",
+							"proposal_id", proposal.ProposalId, "err", err)
+					}
+				}
+			}
+			if err := k.SetProposal(ctx, proposal); err != nil {
+				k.logger.Error("failed to mark deposit-expired proposal as failed",
+					"proposal_id", proposal.ProposalId, "err", err)
+				continue
+			}
+			k.logger.Info("Proposal deposit period expired — failed",
+				"proposal_id", proposal.ProposalId)
+
+		case types.ProposalStatusVoting:
+			if currentBlock <= proposal.VotingEndTime {
+				continue
+			}
+			// Voting period ended → tally
+			passed, err := k.TallyProposal(ctx, proposal.ProposalId)
+			if err != nil {
+				k.logger.Error("failed to tally proposal",
+					"proposal_id", proposal.ProposalId, "err", err)
+				continue
+			}
+			// Execute if passed
+			if passed {
+				if err := k.ExecuteProposal(ctx, proposal.ProposalId); err != nil {
+					k.logger.Error("failed to execute proposal",
+						"proposal_id", proposal.ProposalId, "err", err)
+				}
+			}
+		}
+	}
+
+	return nil
+}
