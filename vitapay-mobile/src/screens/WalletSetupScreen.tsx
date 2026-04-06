@@ -2,23 +2,10 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator,
 } from 'react-native';
+import { generateWallet as generateWalletLib, importWallet as importWalletLib } from '../lib/wallet';
+import { saveMnemonic, saveAddress } from '../lib/storage';
 
 const COLORS = { bg: '#0a0a0a', card: '#141414', accent: '#00ff88', text: '#ffffff', muted: '#888888', warning: '#ffaa00' };
-
-// Mock — real crypto in Job 2
-async function generateWallet(): Promise<{ mnemonic: string; address: string }> {
-  await new Promise(r => setTimeout(r, 500));
-  return {
-    mnemonic: 'abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act',
-    address: 'vita1qg5eathl0pgdpe4ghrjkz6y9pljpz47v4ym6qy',
-  };
-}
-
-async function importWallet(mnemonic: string): Promise<{ address: string }> {
-  await new Promise(r => setTimeout(r, 500));
-  if (mnemonic.trim().split(/\s+/).length < 12) throw new Error('Invalid mnemonic — must be 12 or 24 words');
-  return { address: 'vita1importedaddress9x8y7z6w5v4u3t2s1r0q...' };
-}
 
 type Mode = 'choose' | 'create' | 'backup' | 'import';
 
@@ -33,27 +20,46 @@ export default function WalletSetupScreen({ navigation }: any) {
   const onCreate = async () => {
     setLoading(true);
     try {
-      const w = await generateWallet();
+      const w = await generateWalletLib();
       setMnemonic(w.mnemonic);
       setAddress(w.address);
       setMode('backup');
-    } catch (e: any) { Alert.alert('Error', e.message); }
-    finally { setLoading(false); }
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onConfirmBackup = () => {
-    if (!backedUp) { Alert.alert('Important', 'Please confirm you have backed up your seed phrase'); return; }
-    navigation.replace('Main');
+  const onConfirmBackup = async () => {
+    if (!backedUp) {
+      Alert.alert('Important', 'Please confirm you have backed up your seed phrase');
+      return;
+    }
+    setLoading(true);
+    try {
+      await saveMnemonic(mnemonic);
+      await saveAddress(address);
+      navigation.replace('Main');
+    } catch (e: any) {
+      Alert.alert('Error', `Failed to save wallet: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onImport = async () => {
     setLoading(true);
     try {
-      const w = await importWallet(importMnemonic);
-      setAddress(w.address);
+      const w = await importWalletLib(importMnemonic);
+      await saveMnemonic(importMnemonic.trim());
+      await saveAddress(w.address);
       navigation.replace('Main');
-    } catch (e: any) { Alert.alert('Import failed', e.message); }
-    finally { setLoading(false); }
+    } catch (e: any) {
+      Alert.alert('Import failed', e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (mode === 'choose') return (
@@ -95,8 +101,12 @@ export default function WalletSetupScreen({ navigation }: any) {
         </View>
         <Text style={styles.checkText}>I have written down my seed phrase</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.btn, !backedUp && styles.btnDisabled]} onPress={onConfirmBackup} disabled={!backedUp}>
-        <Text style={styles.btnText}>Continue to Wallet</Text>
+      <TouchableOpacity
+        style={[styles.btn, (!backedUp || loading) && styles.btnDisabled]}
+        onPress={onConfirmBackup}
+        disabled={!backedUp || loading}
+      >
+        {loading ? <ActivityIndicator color={COLORS.bg} /> : <Text style={styles.btnText}>Continue to Wallet</Text>}
       </TouchableOpacity>
     </ScrollView>
   );

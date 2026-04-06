@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,47 +6,89 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import { WalletAccount } from '../types/wallet';
-
-// Mock API — replaced in Job 2
-async function fetchWalletAccount(): Promise<WalletAccount> {
-  return {
-    address: 'vita1qg5eathl0pgdpe4ghrjkz6y9pljpz47v4ym6qy',
-    publicKey: 'Ao3HgNq...',
-    balance: '1250.500000',
-    stakedBalance: '500.000000',
-    pendingRewards: '12.345678',
-  };
-}
+import { getBalance } from '../lib/wallet';
+import { getAddress } from '../lib/storage';
+import { getDelegations } from '../lib/staking';
 
 const COLORS = { bg: '#0a0a0a', card: '#141414', accent: '#00ff88', text: '#ffffff', muted: '#888888' };
 
 export default function HomeScreen({ navigation }: any) {
-  const [account, setAccount] = useState<WalletAccount | null>(null);
+  const [address, setAddress] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string>('0.000000');
+  const [stakedBalance, setStakedBalance] = useState<string>('0.000000');
+  const [pendingRewards, setPendingRewards] = useState<string>('0.000000');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchWalletAccount().then((a) => { setAccount(a); setLoading(false); });
+  const loadData = useCallback(async () => {
+    try {
+      const addr = await getAddress();
+      if (!addr) {
+        setLoading(false);
+        return;
+      }
+      setAddress(addr);
+      const [bal, delegations] = await Promise.all([
+        getBalance(addr),
+        getDelegations(addr),
+      ]);
+      setBalance(bal);
+
+      const totalStaked = delegations.reduce(
+        (sum, d) => sum + parseFloat(d.delegatedAmount),
+        0,
+      ).toFixed(6);
+      const totalRewards = delegations.reduce(
+        (sum, d) => sum + parseFloat(d.pendingRewards),
+        0,
+      ).toFixed(6);
+      setStakedBalance(totalStaked);
+      setPendingRewards(totalRewards);
+    } catch (e) {
+      // silently fail; show zeros
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  if (loading) return <View style={styles.center}><ActivityIndicator color={COLORS.accent} size="large" /></View>;
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={COLORS.accent} size="large" />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent} />}
+    >
       <View style={styles.card}>
         <Text style={styles.label}>VITA Balance</Text>
-        <Text style={styles.balance}>{account?.balance} VITA</Text>
-        <Text style={styles.address} numberOfLines={1}>{account?.address}</Text>
+        <Text style={styles.balance}>{balance} VITA</Text>
+        <Text style={styles.address} numberOfLines={1}>{address ?? 'No wallet loaded'}</Text>
       </View>
       <View style={styles.row}>
         <View style={styles.statCard}>
           <Text style={styles.label}>Staked</Text>
-          <Text style={styles.statValue}>{account?.stakedBalance} VITA</Text>
+          <Text style={styles.statValue}>{stakedBalance} VITA</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.label}>Rewards</Text>
-          <Text style={[styles.statValue, { color: COLORS.accent }]}>{account?.pendingRewards} VITA</Text>
+          <Text style={[styles.statValue, { color: COLORS.accent }]}>{pendingRewards} VITA</Text>
         </View>
       </View>
       <View style={styles.actions}>

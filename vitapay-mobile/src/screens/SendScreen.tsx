@@ -2,17 +2,10 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator,
 } from 'react-native';
+import { sendVITA, estimateFee } from '../lib/wallet';
+import { getMnemonic } from '../lib/storage';
 
 const COLORS = { bg: '#0a0a0a', card: '#141414', accent: '#00ff88', text: '#ffffff', muted: '#888888', error: '#ff4444' };
-
-// Mock — real signing in Job 2
-async function estimateFee(amount: string): Promise<string> {
-  return (parseFloat(amount || '0') * 0.0025 + 0.01).toFixed(6);
-}
-async function sendTransaction(to: string, amount: string, memo: string): Promise<string> {
-  await new Promise(r => setTimeout(r, 1500));
-  return '7A3F9B2C1D4E5F6A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5A6B7C8D9E0F';
-}
 
 export default function SendScreen({ navigation }: any) {
   const [to, setTo] = useState('');
@@ -26,14 +19,28 @@ export default function SendScreen({ navigation }: any) {
   };
 
   const onSend = async () => {
-    if (!to || !amount) { Alert.alert('Error', 'Address and amount required'); return; }
+    if (!to || !amount) {
+      Alert.alert('Error', 'Address and amount required');
+      return;
+    }
     setSending(true);
     try {
-      const hash = await sendTransaction(to, amount, memo);
-      Alert.alert('Success', `Tx hash:\n${hash}`, [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      const mnemonic = await getMnemonic();
+      if (!mnemonic) {
+        Alert.alert('Error', 'No wallet found. Please set up your wallet first.');
+        return;
+      }
+      const txHash = await sendVITA(mnemonic, to, amount, memo);
+      Alert.alert(
+        'Transaction Sent ✓',
+        `Tx hash:\n${txHash}`,
+        [{ text: 'OK', onPress: () => navigation.goBack() }],
+      );
     } catch (e: any) {
-      Alert.alert('Error', e.message);
-    } finally { setSending(false); }
+      Alert.alert('Transaction Failed', e.message ?? 'Unknown error');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
