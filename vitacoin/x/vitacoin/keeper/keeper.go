@@ -499,19 +499,31 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 func (k Keeper) EndBlocker(ctx sdk.Context) error {
 	// Log block end for vitacoin module
 	k.logger.Debug("EndBlock", "height", ctx.BlockHeight())
-	
+
+	// Process mature unbondings every block
+	if err := k.ProcessMatureUnbondings(ctx); err != nil {
+		k.logger.Error("failed to process mature unbondings", "error", err)
+	}
+
+	// Distribute staking rewards every 100 blocks
+	if ctx.BlockHeight()%100 == 0 {
+		if err := k.DistributeStakingRewards(ctx); err != nil {
+			k.logger.Error("failed to distribute staking rewards", "height", ctx.BlockHeight(), "error", err)
+		}
+	}
+
 	// Process fee distribution and rewards
 	if err := k.processFeeDistribution(ctx); err != nil {
 		k.logger.Error("failed to process fee distribution", "error", err)
 		return fmt.Errorf("failed to process fee distribution: %w", err)
 	}
-	
+
 	// Update merchant tiers based on volume
 	if err := k.updateMerchantTiers(ctx); err != nil {
 		k.logger.Error("failed to update merchant tiers", "error", err)
 		return fmt.Errorf("failed to update merchant tiers: %w", err)
 	}
-	
+
 	// Expire old payments
 	if err := k.expireOldPayments(ctx); err != nil {
 		k.logger.Error("failed to expire old payments", "error", err)
