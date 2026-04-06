@@ -529,7 +529,13 @@ func (k Keeper) EndBlocker(ctx sdk.Context) error {
 		k.logger.Error("failed to expire old payments", "error", err)
 		return fmt.Errorf("failed to expire old payments: %w", err)
 	}
-	
+
+	// Phase 5: Process governance proposals (deposit expiry + voting tally + execution)
+	if err := k.EndBlockerGovernance(ctx); err != nil {
+		k.logger.Error("failed to process governance end-blocker", "error", err)
+		// Non-fatal: log and continue
+	}
+
 	return nil
 }
 
