@@ -165,6 +165,18 @@ const (
 	AttributeKeySlashFactor     = "slash_factor"
 	AttributeKeySlashAmount     = "slash_amount"
 	AttributeKeyCreatedBlock    = "created_block"
+
+	// Phase 5: Governance Event Types
+	EventTypeProposalSubmitted = "proposal_submitted"
+	EventTypeProposalActivated = "proposal_activated"
+	EventTypeDepositAdded      = "deposit_added"
+
+	// Phase 5: Governance Attributes
+	AttributeKeyProposer       = "proposer"
+	AttributeKeyProposalType   = "proposal_type"
+	AttributeKeyProposalStatus = "proposal_status"
+	AttributeKeyDepositor      = "depositor"
+	AttributeKeyDepositAmount  = "deposit_amount"
 )
 
 // CreateTransactionEvent is emitted when a new transaction is created.

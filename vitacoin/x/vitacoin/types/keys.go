@@ -169,3 +169,64 @@ func GetPendingRewardKey(delegatorAddr string) []byte {
 func GetStVITASupplyKey() []byte {
 	return StVITASupplyKey
 }
+
+// ─── Phase 5: Governance Key Prefixes ─────────────────────────────────────────
+
+var (
+	// KeyPrefixProposal is the prefix for proposal records (0x30).
+	KeyPrefixProposal = []byte{0x30}
+
+	// KeyPrefixVote is the prefix for vote records (0x31).
+	KeyPrefixVote = []byte{0x31}
+
+	// KeyPrefixDeposit is the prefix for deposit records (0x32).
+	KeyPrefixDeposit = []byte{0x32}
+
+	// KeyProposalCounter is the key for the proposal sequence counter (0x33).
+	KeyProposalCounter = []byte{0x33}
+)
+
+// GetProposalKey returns the KV store key for a proposal.
+// Key layout: KeyPrefixProposal | proposalId (8-byte big-endian)
+func GetProposalKey(proposalId uint64) []byte {
+	bz := make([]byte, 8)
+	bz[0] = byte(proposalId >> 56)
+	bz[1] = byte(proposalId >> 48)
+	bz[2] = byte(proposalId >> 40)
+	bz[3] = byte(proposalId >> 32)
+	bz[4] = byte(proposalId >> 24)
+	bz[5] = byte(proposalId >> 16)
+	bz[6] = byte(proposalId >> 8)
+	bz[7] = byte(proposalId)
+	return append(KeyPrefixProposal, bz...)
+}
+
+// GetVoteKey returns the KV store key for a single vote.
+// Key layout: KeyPrefixVote | proposalId (8-byte big-endian) | ":" | voter
+func GetVoteKey(proposalId uint64, voter string) []byte {
+	bz := make([]byte, 8)
+	bz[0] = byte(proposalId >> 56)
+	bz[1] = byte(proposalId >> 48)
+	bz[2] = byte(proposalId >> 40)
+	bz[3] = byte(proposalId >> 32)
+	bz[4] = byte(proposalId >> 24)
+	bz[5] = byte(proposalId >> 16)
+	bz[6] = byte(proposalId >> 8)
+	bz[7] = byte(proposalId)
+	key := append(KeyPrefixVote, bz...)
+	key = append(key, byte(':'))
+	return append(key, []byte(voter)...)
+}
+
+// GetVotesByProposalPrefix returns the prefix used to iterate all votes for a proposal.
+func GetVotesByProposalPrefix(proposalId uint64) []byte {
+	bz := make([]byte, 8)
+	bz[0] = byte(proposalId >> 56)
+	bz[1] = byte(proposalId >> 48)
+	bz[2] = byte(proposalId >> 40)
+	bz[3] = byte(proposalId >> 32)
+	bz[4] = byte(proposalId >> 24)
+	bz[5] = byte(proposalId >> 16)
+	bz[6] = byte(proposalId >> 8)
+	bz[7] = byte(proposalId)
+	return append(KeyPrefixVote, bz...)}
