@@ -49,9 +49,23 @@ const (
 	EventTypeTreasuryProposal    = "treasury_proposal"
 
 	// Phase 4: Staking Events
-	EventTypeDelegation   = "delegation"
-	EventTypeUnbonding    = "unbonding"
+	EventTypeDelegation        = "delegation"
+	EventTypeUnbonding         = "unbonding"
 	EventTypeUnbondingReleased = "unbonding_released"
+
+	// Phase 4: Validator Events
+	EventTypeValidatorRegistered = "validator_registered"
+	EventTypeValidatorSlashed    = "validator_slashed"
+	EventTypeValidatorJailed     = "validator_jailed"
+	EventTypeValidatorUnjailed   = "validator_unjailed"
+
+	// Phase 4: Reward Events
+	EventTypeRewardClaim        = "reward_claim"
+	EventTypeRewardDistribution = "reward_distribution"
+
+	// Phase 4: Liquid Staking Events
+	EventTypeLiquidDelegate   = "liquid_delegate"
+	EventTypeLiquidUndelegate = "liquid_undelegate"
 )
 
 // Attribute keys for events
@@ -142,6 +156,15 @@ const (
 	AttributeKeyDelegationAmount = "delegation_amount"
 	AttributeKeyMaturityBlock    = "maturity_block"
 	AttributeKeyStartBlock       = "start_block"
+
+	// Phase 4: Validator Attributes
+	AttributeKeyOperatorAddress = "operator_address"
+	AttributeKeyMoniker         = "moniker"
+	AttributeKeyCommission      = "commission"
+	AttributeKeySelfBond        = "self_bond"
+	AttributeKeySlashFactor     = "slash_factor"
+	AttributeKeySlashAmount     = "slash_amount"
+	AttributeKeyCreatedBlock    = "created_block"
 )
 
 // CreateTransactionEvent is emitted when a new transaction is created.

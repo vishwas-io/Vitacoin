@@ -23,6 +23,10 @@ const (
 	StakingDelegationPrefixByte = 0x10
 	StakingUnbondingPrefixByte  = 0x11
 	StakingValidatorPrefixByte  = 0x12
+	StakingPendingRewardPrefixByte = 0x21
+
+	// Phase 4: Liquid Staking Key Prefix
+	StakingStVITASupplyPrefixByte = 0x22
 )
 
 // Phase 4: Staking store keys
@@ -35,6 +39,12 @@ var (
 
 	// ValidatorKeyPrefix is the prefix for validator records
 	ValidatorKeyPrefix = []byte{StakingValidatorPrefixByte}
+
+	// PendingRewardKeyPrefix is the prefix for pending delegator reward records
+	PendingRewardKeyPrefix = []byte{StakingPendingRewardPrefixByte}
+
+	// StVITASupplyKey is the single KV key for the total stVITA supply
+	StVITASupplyKey = []byte{StakingStVITASupplyPrefixByte}
 )
 
 // Store key prefixes
@@ -117,6 +127,11 @@ func GetRateLimitKey(address string) []byte {
 
 // Phase 4: Staking Key Getters
 
+// GetValidatorKey returns the store key for a validator record.
+func GetValidatorKey(addr string) []byte {
+	return append(ValidatorKeyPrefix, []byte(addr)...)
+}
+
 // GetDelegationKey returns the store key for a delegation record.
 // Key format: DelegationKeyPrefix | delegatorAddr | validatorAddr
 func GetDelegationKey(delegatorAddr, validatorAddr string) []byte {
@@ -143,4 +158,14 @@ func GetUnbondingKey(delegatorAddr, validatorAddr string, maturityBlock int64) [
 	blockBytes[6] = byte(maturityBlock >> 8)
 	blockBytes[7] = byte(maturityBlock)
 	return append(key, blockBytes...)
+}
+
+// GetPendingRewardKey returns the store key for a delegator's pending reward record.
+func GetPendingRewardKey(delegatorAddr string) []byte {
+	return append(PendingRewardKeyPrefix, []byte(delegatorAddr)...)
+}
+
+// GetStVITASupplyKey returns the single KV key for total stVITA supply.
+func GetStVITASupplyKey() []byte {
+	return StVITASupplyKey
 }
