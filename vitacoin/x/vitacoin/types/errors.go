@@ -25,6 +25,15 @@ const (
 	errCodeInvalidTier
 	errCodeUnauthorized
 	errCodeInvalidParams
+
+	// Phase 6: IBC error codes
+	errCodeIBCInvalidSender
+	errCodeIBCInvalidReceiver
+	errCodeIBCInvalidDenom
+	errCodeIBCInvalidAmount
+	errCodeIBCMemoTooLong
+	errCodeIBCPacketNotFound
+	errCodeIBCChannelNotFound
 )
 
 // Module sentinel errors
@@ -48,4 +57,13 @@ var (
 	ErrInvalidTier              = sdkerrors.Register(ModuleName, errCodeInvalidTier, "invalid merchant tier")
 	ErrUnauthorized             = sdkerrors.Register(ModuleName, errCodeUnauthorized, "unauthorized")
 	ErrInvalidParams            = sdkerrors.Register(ModuleName, errCodeInvalidParams, "invalid parameters")
+
+	// Phase 6: IBC errors
+	ErrInvalidSender    = sdkerrors.Register(ModuleName, errCodeIBCInvalidSender, "invalid IBC sender address")
+	ErrInvalidReceiver  = sdkerrors.Register(ModuleName, errCodeIBCInvalidReceiver, "invalid IBC receiver address")
+	ErrInvalidDenom     = sdkerrors.Register(ModuleName, errCodeIBCInvalidDenom, "invalid IBC token denomination")
+	ErrInvalidAmount    = sdkerrors.Register(ModuleName, errCodeIBCInvalidAmount, "IBC transfer amount must be positive")
+	ErrMemoTooLong      = sdkerrors.Register(ModuleName, errCodeIBCMemoTooLong, "IBC memo exceeds maximum length")
+	ErrIBCPacketNotFound   = sdkerrors.Register(ModuleName, errCodeIBCPacketNotFound, "IBC pending packet not found")
+	ErrIBCChannelNotFound  = sdkerrors.Register(ModuleName, errCodeIBCChannelNotFound, "IBC channel not found")
 )

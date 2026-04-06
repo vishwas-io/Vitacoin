@@ -230,3 +230,25 @@ func GetVotesByProposalPrefix(proposalId uint64) []byte {
 	bz[6] = byte(proposalId >> 8)
 	bz[7] = byte(proposalId)
 	return append(KeyPrefixVote, bz...)}
+
+// ─── Phase 6: IBC Key Prefixes ────────────────────────────────────────────────
+
+var (
+	// KeyPrefixIBCPacket is the prefix for pending outgoing IBC packet records (0x40).
+	KeyPrefixIBCPacket = []byte{0x40}
+)
+
+// GetIBCPacketKey returns the KV store key for a pending IBC packet.
+// Key layout: KeyPrefixIBCPacket | sequence (8-byte big-endian)
+func GetIBCPacketKey(sequence uint64) []byte {
+	bz := make([]byte, 8)
+	bz[0] = byte(sequence >> 56)
+	bz[1] = byte(sequence >> 48)
+	bz[2] = byte(sequence >> 40)
+	bz[3] = byte(sequence >> 32)
+	bz[4] = byte(sequence >> 24)
+	bz[5] = byte(sequence >> 16)
+	bz[6] = byte(sequence >> 8)
+	bz[7] = byte(sequence)
+	return append(KeyPrefixIBCPacket, bz...)
+}
