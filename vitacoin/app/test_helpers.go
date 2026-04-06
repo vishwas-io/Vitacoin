@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/std"
@@ -44,7 +44,7 @@ func Setup(t *testing.T, isCheckTx bool) *VitacoinApp {
 	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
 	balance := banktypes.Balance{
 		Address: acc.GetAddress().String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100000000000000))),
 	}
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
@@ -61,7 +61,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *cmttypes.ValidatorSet, genAccs
 	
 	app := NewVitacoinApp(logger, db, nil, true, simtestutil.NewAppOptionsWithFlagHome(t.TempDir()))
 
-	genesisState := NewDefaultGenesisState(app.AppCodec())
+	genesisState := NewDefaultGenesisState()
 
 	// Set up auth genesis state
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
@@ -215,7 +215,7 @@ func SignAndDeliver(
 	)
 	require.NoError(t, err)
 
-	txBytes, err := txCfg.TxEncoder()(tx)
+	_, err = txCfg.TxEncoder()(tx)
 	require.NoError(t, err)
 
 	// Simulate a sending a transaction
@@ -237,7 +237,7 @@ func CheckBalance(t *testing.T, app *VitacoinApp, ctx sdk.Context, addr sdk.AccA
 	t.Helper()
 
 	balances := app.BankKeeper.GetAllBalances(ctx, addr)
-	require.True(t, expected.IsEqual(balances), "expected %s, got %s", expected, balances)
+	require.True(t, balances.Equal(expected), "expected %s, got %s", expected, balances)
 }
 
 // GetAccountBalance returns the balance of an account

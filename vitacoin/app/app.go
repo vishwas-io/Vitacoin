@@ -8,12 +8,14 @@ import (
 	"path/filepath"
 
 	dbm "github.com/cosmos/cosmos-db"
+	gogoproto "github.com/cosmos/gogoproto/proto"
 	"github.com/spf13/cast"
 
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -165,7 +167,7 @@ type VitacoinApp struct {
 	SlashingKeeper        slashingkeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
 	DistrKeeper           distrkeeper.Keeper
-	GovKeeper             govkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
 	CrisisKeeper          *crisiskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
@@ -191,8 +193,7 @@ func NewVitacoinApp(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *VitacoinApp {
 	interfaceRegistry, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
-		ProtoFiles:     std.DefaultProtoFiles,
-		SigningOptions: authtx.DefaultSignModes,
+		ProtoFiles: gogoproto.HybridResolver,
 	})
 	if err != nil {
 		panic(err)
@@ -345,7 +346,7 @@ func NewVitacoinApp(
 	// Create static IBC router, add app module routes, then set and seal it
 	govRouter := govv1beta1.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramstypes.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
+		AddRoute(paramstypes.ModuleName, params.NewParamChangeProposalHandler(app.ParamsKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	app.GovKeeper = govkeeper.NewKeeper(
@@ -369,12 +370,12 @@ func NewVitacoinApp(
 	// must be passed by reference here.
 
 	app.ModuleManager = module.NewManager(
-		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, txConfig, genutiltypes.DefaultMessageValidator),
+		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, bApp, txConfig),
 		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
-		crisis.NewAppModule(app.CrisisKeeper, skipUpgradeHeights, app.GetSubspace(crisistypes.ModuleName)),
-		gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
+		crisis.NewAppModule(app.CrisisKeeper, false, app.GetSubspace(crisistypes.ModuleName)),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)),
@@ -485,9 +486,11 @@ func NewVitacoinApp(
 	}
 
 	app.SetAnteHandler(anteHandler)
-	app.SetPostHandler(posthandler.NewPostHandler(
-		posthandler.HandlerOptions{},
-	))
+	postHandler, err := posthandler.NewPostHandler(posthandler.HandlerOptions{})
+	if err != nil {
+		panic(err)
+	}
+	app.SetPostHandler(postHandler)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -531,6 +534,51 @@ func (app *VitacoinApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain)
 // LoadHeight loads a particular height
 func (app *VitacoinApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height)
+}
+
+// ExportAppStateAndValidators exports the state of the application for a genesis file.
+func (app *VitacoinApp) ExportAppStateAndValidators(
+	forZeroHeight bool, jailAllowedAddrs, modulesToExport []string,
+) (servertypes.ExportedApp, error) {
+	// as if they could withdraw from the start of the next block
+	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
+
+	// We export at last height + 1, because that's the height at which
+	// CometBFT will start InitChain.
+	height := app.LastBlockHeight() + 1
+	if forZeroHeight {
+		height = 0
+		if err := app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs); err != nil {
+			return servertypes.ExportedApp{}, err
+		}
+	}
+
+	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
+	appState, err := json.MarshalIndent(genState, "", "  ")
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
+	return servertypes.ExportedApp{
+		AppState:        appState,
+		Validators:      validators,
+		Height:          height,
+		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
+	}, nil
+}
+
+// prepForZeroHeightGenesis preps for fresh start at zero height.
+func (app *VitacoinApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) error {
+	return nil
 }
 
 // LegacyAmino returns SimApp's amino codec.

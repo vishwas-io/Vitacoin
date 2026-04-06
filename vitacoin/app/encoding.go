@@ -1,6 +1,8 @@
 package app
 
 import (
+	gogoproto "github.com/cosmos/gogoproto/proto"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -21,8 +23,7 @@ type EncodingConfig struct {
 func MakeEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	interfaceRegistry, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
-		ProtoFiles:     std.DefaultProtoFiles,
-		SigningOptions: tx.DefaultSignModes,
+		ProtoFiles: gogoproto.HybridResolver,
 	})
 	if err != nil {
 		panic(err)
