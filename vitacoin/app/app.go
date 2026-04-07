@@ -9,6 +9,7 @@ import (
 
 	dbm "github.com/cosmos/cosmos-db"
 	gogoproto "github.com/cosmos/gogoproto/proto"
+	txsigning "cosmossdk.io/x/tx/signing"
 	"github.com/spf13/cast"
 
 	"cosmossdk.io/log"
@@ -194,6 +195,10 @@ func NewVitacoinApp(
 ) *VitacoinApp {
 	interfaceRegistry, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
 		ProtoFiles: gogoproto.HybridResolver,
+		SigningOptions: txsigning.Options{
+			AddressCodec:          authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
+			ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		},
 	})
 	if err != nil {
 		panic(err)
@@ -445,6 +450,8 @@ func NewVitacoinApp(
 	)
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
+	app.BasicModuleManager = ModuleBasics
+	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	err = app.ModuleManager.RegisterServices(app.configurator)
 	if err != nil {

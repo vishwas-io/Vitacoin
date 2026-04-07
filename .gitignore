@@ -12,7 +12,7 @@ dist/
 *.dll
 *.so
 *.dylib
-vitacoind
+build/vitacoind
 *.test
 *.out
 
