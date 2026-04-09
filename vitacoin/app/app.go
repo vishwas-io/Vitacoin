@@ -450,7 +450,7 @@ func NewVitacoinApp(
 	)
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
-	app.BasicModuleManager = ModuleBasics
+	app.BasicModuleManager = module.NewBasicManagerFromManager(app.ModuleManager, nil)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	err = app.ModuleManager.RegisterServices(app.configurator)
