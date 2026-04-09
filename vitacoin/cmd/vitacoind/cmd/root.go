@@ -36,6 +36,7 @@ import (
 	stakingcli "github.com/cosmos/cosmos-sdk/x/staking/client/cli"
 
 	"github.com/vitacoin/vitacoin/vitacoin/app"
+	vitacoincli "github.com/vitacoin/vitacoin/vitacoin/x/vitacoin/client/cli"
 )
 
 // NewRootCmd creates a new root command for vitacoind.
@@ -207,6 +208,8 @@ func txCommand(basicManager module.BasicManager) *cobra.Command {
 		govcli.NewCmdSubmitProposal(),
 		govcli.NewCmdVote(),
 		govcli.NewCmdDeposit(),
+		// VitaCoin custom module
+		vitacoincli.GetTxCmd(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
