@@ -75,6 +75,14 @@ type Params struct {
 	// paused_fee_distribution is an emergency flag to pause fee distribution
 	// Can only be set by governance
 	PausedFeeDistribution bool `protobuf:"varint,18,opt,name=paused_fee_distribution,json=pausedFeeDistribution,proto3" json:"paused_fee_distribution,omitempty"`
+	// paused_payments is an emergency circuit breaker to pause ALL payment processing
+	// Can only be set by governance — use when critical bug detected in payment flow
+	PausedPayments bool `protobuf:"varint,19,opt,name=paused_payments,json=pausedPayments,proto3" json:"paused_payments,omitempty"`
+	// paused_staking is an emergency circuit breaker to pause custom staking operations
+	// Does NOT affect cosmos-sdk native staking — only VitaCoin module staking
+	PausedStaking bool `protobuf:"varint,20,opt,name=paused_staking,json=pausedStaking,proto3" json:"paused_staking,omitempty"`
+	// paused_ibc is an emergency circuit breaker to pause IBC send/receive
+	PausedIBC bool `protobuf:"varint,21,opt,name=paused_ibc,json=pausedIbc,proto3" json:"paused_ibc,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -140,6 +148,27 @@ func (m *Params) GetPausedFeeCollection() bool {
 func (m *Params) GetPausedFeeDistribution() bool {
 	if m != nil {
 		return m.PausedFeeDistribution
+	}
+	return false
+}
+
+func (m *Params) GetPausedPayments() bool {
+	if m != nil {
+		return m.PausedPayments
+	}
+	return false
+}
+
+func (m *Params) GetPausedStaking() bool {
+	if m != nil {
+		return m.PausedStaking
+	}
+	return false
+}
+
+func (m *Params) GetPausedIBC() bool {
+	if m != nil {
+		return m.PausedIBC
 	}
 	return false
 }

@@ -23,14 +23,19 @@ func DefaultParams() Params {
 		EnableInstantSettlement: true,
 		
 		// Phase 3: Fee Distribution Parameters
-		FeeBurnPercent:         math.LegacyNewDecWithPrec(25, 2),  // 25% burn
-		FeeValidatorPercent:    math.LegacyNewDecWithPrec(50, 2),  // 50% to validators
-		FeeTreasuryPercent:     math.LegacyNewDecWithPrec(25, 2),  // 25% to treasury
+		FeeBurnPercent:         math.LegacyNewDecWithPrec(40, 2),  // 40% burn
+		FeeValidatorPercent:    math.LegacyNewDecWithPrec(40, 2),  // 40% to validators
+		FeeTreasuryPercent:     math.LegacyNewDecWithPrec(20, 2),  // 20% to treasury
 		MinProtocolFee:         math.NewInt(1000000000000000),      // 0.001 VITA (1e15 avita)
 		MaxProtocolFee:         math.NewInt(100).Mul(oneVITA),      // 100 VITA
-		BurnCapSupply:          math.NewInt(500000000).Mul(oneVITA), // 500M VITA minimum supply
+		BurnCapSupply:          math.NewInt(100000000).Mul(oneVITA), // 100M VITA minimum supply (aggressive deflation)
 		PausedFeeCollection:    false,
 		PausedFeeDistribution:  false,
+		
+		// Circuit Breaker: Emergency pause flags (governance-controlled)
+		PausedPayments:         false,
+		PausedStaking:          false,
+		PausedIBC:              false,
 	}
 }
 
@@ -132,7 +137,10 @@ func (p Params) String() string {
   Burn Cap Supply:           %s
   Emergency Flags:
     Fee Collection Paused:   %t
-    Fee Distribution Paused: %t`,
+    Fee Distribution Paused: %t
+    Payments Paused:         %t
+    Staking Paused:          %t
+    IBC Paused:              %t`,
 		p.MinGasPrice,
 		p.TransactionFeePercent,
 		p.MerchantFeeDiscount,
@@ -151,5 +159,8 @@ func (p Params) String() string {
 		p.BurnCapSupply,
 		p.PausedFeeCollection,
 		p.PausedFeeDistribution,
+		p.PausedPayments,
+		p.PausedStaking,
+		p.PausedIBC,
 	)
 }

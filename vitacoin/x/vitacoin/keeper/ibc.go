@@ -64,6 +64,12 @@ func (k Keeper) IBCSendVITA(
 	amount sdk.Coin,
 	memo string,
 ) error {
+	// Circuit breaker: check if IBC is paused
+	params, err := k.GetParams(ctx)
+	if err == nil && params.PausedIBC {
+		return fmt.Errorf("IBC transfers are currently paused by governance — circuit breaker active")
+	}
+	
 	// 1. Validate inputs
 	if receiver == "" {
 		return types.ErrInvalidReceiver

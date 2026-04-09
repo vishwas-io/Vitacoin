@@ -53,12 +53,12 @@ FeeTreasuryPercent:     math.LegacyNewDecWithPrec(20, 2),  // 20% to treasury
 ```bash
 grep "max_gas" ~/.vitacoin/config/config.toml
 ```
-**Expected:** Contains `max_gas = 100000000` (in [consensus.params.block] section of genesis)
+**Expected:** Contains `max_gas = 25000000` (in [consensus.params.block] section of genesis)
 
 ```bash
 curl -s http://localhost:26657/consensus_params | jq .result.consensus_params.block.max_gas
 ```
-**Expected:** `"100000000"`
+**Expected:** `"25000000"`
 
 ### 0.5 — Min self-delegation
 
@@ -340,7 +340,7 @@ raw = json.dumps(g).replace('"stake"', '"uvita"')
 g = json.loads(raw)
 
 # Consensus block params
-g["consensus"]["params"]["block"]["max_gas"] = "100000000"
+g["consensus"]["params"]["block"]["max_gas"] = "25000000"
 g["consensus"]["params"]["block"]["max_bytes"] = "22020096"
 
 # Staking
@@ -350,7 +350,7 @@ g["app_state"]["staking"]["params"]["min_commission_rate"] = "0.0500000000000000
 
 # Slashing
 g["app_state"]["slashing"]["params"]["signed_blocks_window"] = "10000"
-g["app_state"]["slashing"]["params"]["min_signed_per_window"] = "0.050000000000000000"
+g["app_state"]["slashing"]["params"]["min_signed_per_window"] = "0.900000000000000000"
 g["app_state"]["slashing"]["params"]["slash_fraction_double_sign"] = "0.050000000000000000"
 g["app_state"]["slashing"]["params"]["slash_fraction_downtime"] = "0.000100000000000000"
 g["app_state"]["slashing"]["params"]["downtime_jail_duration"] = "600s"
@@ -395,7 +395,7 @@ PYEOF
 
 | Role | Count | Machine Type | Disk | Notes |
 |---|---|---|---|---|
-| Validator | 3-5 | e2-standard-4 (4 CPU, 16GB) | 500GB SSD | Behind sentry nodes |
+| Validator | 5 (minimum) | e2-standard-4 (4 CPU, 16GB) | 500GB SSD | Behind sentry nodes |
 | Seed | 2 | e2-medium (1 CPU, 4GB) | 100GB SSD | `seed_mode = true` |
 | Archive/RPC | 1 | e2-standard-4 (4 CPU, 16GB) | 1TB SSD | `pruning = nothing` |
 | Sentry | 2 per validator | e2-standard-2 (2 CPU, 8GB) | 200GB SSD | Public-facing |

@@ -50,6 +50,12 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 // RegisterMerchant implements the Msg/RegisterMerchant method
 // Registers a new merchant after collecting registration fee and initial stake
 func (ms msgServer) RegisterMerchant(ctx context.Context, msg *types.MsgRegisterMerchant) (*types.MsgRegisterMerchantResponse, error) {
+	// Circuit breaker: check if staking/registration is paused
+	cbParams, cbErr := ms.Keeper.GetParams(ctx)
+	if cbErr == nil && cbParams.PausedStaking {
+		return nil, fmt.Errorf("merchant registration/staking is currently paused by governance — circuit breaker active")
+	}
+	
 	// Validate sender address
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -213,6 +219,12 @@ func (ms msgServer) UpdateMerchant(ctx context.Context, msg *types.MsgUpdateMerc
 // CreatePayment implements the Msg/CreatePayment method
 // Creates a new payment transaction
 func (ms msgServer) CreatePayment(ctx context.Context, msg *types.MsgCreatePayment) (*types.MsgCreatePaymentResponse, error) {
+	// Circuit breaker: check if payments are paused
+	cbParams, cbErr := ms.Keeper.GetParams(ctx)
+	if cbErr == nil && cbParams.PausedPayments {
+		return nil, fmt.Errorf("payments are currently paused by governance — circuit breaker active")
+	}
+	
 	// Validate addresses
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
