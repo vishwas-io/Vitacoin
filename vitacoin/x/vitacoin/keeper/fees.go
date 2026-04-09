@@ -26,10 +26,9 @@ func (k Keeper) CalculateProtocolFee(ctx context.Context, amount math.Int) (math
 	}
 
 	// Calculate percentage-based fee
-	// Convert amount to Dec for percentage calculation
+	// TransactionFeePercent is stored as a decimal fraction (e.g., 0.001 = 0.1%)
 	amountDec := math.LegacyNewDecFromInt(amount)
-	feePercent := params.TransactionFeePercent.Quo(math.LegacyNewDec(100)) // Convert percentage to decimal
-	feeDec := amountDec.Mul(feePercent)
+	feeDec := amountDec.Mul(params.TransactionFeePercent)
 	feeAmount := feeDec.TruncateInt()
 
 	// Apply minimum fee cap
@@ -233,15 +232,12 @@ func (k Keeper) DistributeProtocolFees(ctx context.Context) error {
 		return nil
 	}
 
-	// Calculate splits
-	burnPercent := params.FeeBurnPercent.Quo(math.LegacyNewDec(100))
-	burnAmount := burnPercent.MulInt(totalFees).TruncateInt()
+	// Calculate splits — percent values are already decimal fractions (e.g., 0.4 = 40%)
+	burnAmount := params.FeeBurnPercent.MulInt(totalFees).TruncateInt()
 	
-	validatorPercent := params.FeeValidatorPercent.Quo(math.LegacyNewDec(100))
-	validatorAmount := validatorPercent.MulInt(totalFees).TruncateInt()
+	validatorAmount := params.FeeValidatorPercent.MulInt(totalFees).TruncateInt()
 	
-	treasuryPercent := params.FeeTreasuryPercent.Quo(math.LegacyNewDec(100))
-	treasuryAmount := treasuryPercent.MulInt(totalFees).TruncateInt()
+	treasuryAmount := params.FeeTreasuryPercent.MulInt(totalFees).TruncateInt()
 
 	// Handle rounding - any remainder goes to validators
 	distributed := burnAmount.Add(validatorAmount).Add(treasuryAmount)
