@@ -17,28 +17,28 @@ const (
 	MinBusinessNameLength = 3
 	MaxBusinessNameLength = 100
 	
-	// Payment constraints - aligned with test expectations
-	MinPaymentAmount     = 1000000000000000 // 1e15 (0.001 VITA minimum - practical for micro-transactions)
-	MaxPaymentAmount     = 1000000000000000000000000 // 1e24 (1,000,000 VITA maximum)
+	// Payment constraints — uvita (6 decimals: 1 VITA = 1e6 uvita)
+	MinPaymentAmount     = 1000        // 0.001 VITA (1e3 uvita)
+	MaxPaymentAmount     = 1000000000000 // 1,000,000 VITA (1e12 uvita)
 	MaxMemoLength        = 256
 	
-	// Vault constraints - aligned with test expectations
-	MinVaultAmount       = 1000000000000000000    // 1e18 (1 VITA minimum)
-	MaxVaultAmount       = 10000000000000000000000000 // 1e25 (10,000,000 VITA maximum)
+	// Vault constraints — uvita (6 decimals)
+	MinVaultAmount       = 1000000     // 1 VITA (1e6 uvita)
+	MaxVaultAmount       = 10000000000000 // 10,000,000 VITA (1e13 uvita)
 	MinLockDuration      = 1     // At least 1 block
 	MaxLockDuration      = 5_256_000 // ~1 year at 6s/block (aligned with tests)
 	MaxUnlockHeight      = 5_256_000 // Maximum unlock height (~1 year)
 	
-	// Pool constraints - aligned with test expectations
+	// Pool constraints — uvita (6 decimals)
 	MinPoolNameLength    = 3
 	MaxPoolNameLength    = 50
 	MaxPoolDuration      = 100_000_000 // 100M blocks (aligned with tests)
-	MinPoolAmount        = 1000000000000000  // 1e15 (0.001 VITA minimum reward)
+	MinPoolAmount        = 1000        // 0.001 VITA (1e3 uvita)
 	
-	// Merchant tier thresholds
-	TierBronzeThreshold  = 10000000000000     // 1e13 (10,000 VITA)
-	TierSilverThreshold  = 50000000000000     // 5e13 (50,000 VITA)
-	TierGoldThreshold    = 100000000000000    // 1e14 (100,000 VITA)
+	// Merchant tier thresholds — uvita (6 decimals)
+	TierBronzeThreshold  = 10000000000   // 10,000 VITA (1e10 uvita)
+	TierSilverThreshold  = 50000000000   // 50,000 VITA (5e10 uvita)
+	TierGoldThreshold    = 100000000000  // 100,000 VITA (1e11 uvita)
 	
 	// Security constraints
 	MaxRecipientsPerDistribution = 1000 // Prevent spam
@@ -118,12 +118,12 @@ func ValidatePaymentAmount(amount math.Int) error {
 	
 	// Check minimum amount (prevent dust attacks)
 	if amount.LT(math.NewInt(MinPaymentAmount)) {
-		return sdkerrors.ErrInvalidRequest.Wrapf("amount must be at least %s avita", math.NewInt(MinPaymentAmount).String())
+		return sdkerrors.ErrInvalidRequest.Wrapf("amount must be at least %s uvita", math.NewInt(MinPaymentAmount).String())
 	}
 	
 	// Check maximum amount (prevent overflow attacks)
 	// 1e24 = 1,000,000 VITA (need to construct from smaller numbers to avoid overflow)
-	maxAmount := math.NewInt(1000000).Mul(math.NewInt(1000000000000000000)) // 1M * 1e18
+	maxAmount := math.NewInt(MaxPaymentAmount) // 1M VITA in uvita
 	if amount.GT(maxAmount) {
 		return sdkerrors.ErrInvalidRequest.Wrap("amount exceeds maximum allowed")
 	}
@@ -147,12 +147,12 @@ func ValidateVaultAmount(amount math.Int) error {
 	
 	// Check minimum vault amount
 	if amount.LT(math.NewInt(MinVaultAmount)) {
-		return sdkerrors.ErrInvalidRequest.Wrapf("vault amount must be at least %s avita (1 VITA)", math.NewInt(MinVaultAmount).String())
+		return sdkerrors.ErrInvalidRequest.Wrapf("vault amount must be at least %s uvita (1 VITA)", math.NewInt(MinVaultAmount).String())
 	}
 	
 	// Check maximum vault amount
 	// 1e25 = 10,000,000 VITA (need to construct from smaller numbers to avoid overflow)
-	maxAmount := math.NewInt(10000000).Mul(math.NewInt(1000000000000000000)) // 10M * 1e18
+	maxAmount := math.NewInt(MaxVaultAmount) // 10M VITA in uvita
 	if amount.GT(maxAmount) {
 		return sdkerrors.ErrInvalidRequest.Wrap("vault amount exceeds maximum allowed")
 	}
@@ -318,7 +318,7 @@ func ValidateRewardDistribution(recipients []string, amounts []math.Int) error {
 	}
 	
 	// Check total distribution amount isn't excessive
-	maxAmount := math.NewInt(1000000000).Mul(math.NewInt(1000000000)).Mul(math.NewInt(1000000000)) // 1e27
+	maxAmount := math.NewInt(1000000000000000) // 1B VITA in uvita (1e15)
 	if totalAmount.GT(maxAmount) {
 		return sdkerrors.ErrInvalidRequest.Wrap("total distribution amount exceeds maximum allowed")
 	}
@@ -466,7 +466,7 @@ func ValidateStakeAmount(amount math.Int, minRequired math.Int) error {
 	}
 	
 	// Check maximum stake amount (1e27 = 1 trillion VITA with 18 decimals)
-	maxStake := math.NewInt(1000000000).Mul(math.NewInt(1000000000)).Mul(math.NewInt(1000)) // 1e27
+	maxStake := math.NewInt(1000000000000000) // 1B VITA in uvita (1e15)
 	if amount.GT(maxStake) {
 		return sdkerrors.ErrInvalidRequest.Wrap("amount exceeds maximum allowed")
 	}

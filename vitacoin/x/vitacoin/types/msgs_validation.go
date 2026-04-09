@@ -68,7 +68,7 @@ func (msg *MsgRegisterMerchant) ValidateBasic() error {
 	}
 	
 	// Validate stake amount using enhanced validation
-	minStake := math.NewInt(10000000000000) // 10000 VITA minimum
+	minStake := math.NewInt(1000000000) // 1000 VITA minimum (1e9 uvita)
 	if err := ValidateStakeAmount(msg.StakeAmount, minStake); err != nil {
 		return fmt.Errorf("invalid stake amount: %w", err)
 	}

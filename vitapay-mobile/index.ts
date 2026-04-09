@@ -1,3 +1,6 @@
+// Polyfill crypto.getRandomValues BEFORE any other imports (CosmJS requirement)
+import 'react-native-get-random-values';
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';

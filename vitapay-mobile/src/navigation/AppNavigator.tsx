@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Text } from 'react-native';
+import { Text, ActivityIndicator, View } from 'react-native';
 
 import HomeScreen from '../screens/HomeScreen';
 import SendScreen from '../screens/SendScreen';
@@ -11,18 +11,20 @@ import StakeScreen from '../screens/StakeScreen';
 import PayScreen from '../screens/PayScreen';
 import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
 import WalletSetupScreen from '../screens/WalletSetupScreen';
+import { getAddress } from '../lib/storage';
+import { HomeIcon, SendIcon, ReceiveIcon, StakeIcon, HistoryIcon } from '../components/TabIcons';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 const COLORS = { bg: '#0a0a0a', card: '#141414', accent: '#00ff88', text: '#ffffff', muted: '#888888' };
 
-const TAB_ICONS: Record<string, string> = {
-  Home: '⚡',
-  Send: '↑',
-  Receive: '↓',
-  Stake: '🔒',
-  History: '📋',
+const TAB_ICON_MAP: Record<string, React.FC<{ color: string; size?: number }>> = {
+  Home: HomeIcon,
+  Send: SendIcon,
+  Receive: ReceiveIcon,
+  Stake: StakeIcon,
+  History: HistoryIcon,
 };
 
 function MainTabs() {
@@ -31,12 +33,13 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         headerStyle: { backgroundColor: COLORS.bg },
         headerTintColor: COLORS.text,
-        tabBarStyle: { backgroundColor: COLORS.card, borderTopColor: '#222' },
+        tabBarStyle: { backgroundColor: COLORS.card, borderTopColor: '#222', paddingTop: 6, height: 88 },
         tabBarActiveTintColor: COLORS.accent,
         tabBarInactiveTintColor: COLORS.muted,
-        tabBarIcon: ({ focused }) => (
-          <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.5 }}>{TAB_ICONS[route.name]}</Text>
-        ),
+        tabBarIcon: ({ color }) => {
+          const IconComponent = TAB_ICON_MAP[route.name];
+          return IconComponent ? <IconComponent color={color} size={22} /> : null;
+        },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -59,8 +62,19 @@ function PayStack() {
 }
 
 export default function AppNavigator() {
-  // TODO in Job 2: check AsyncStorage for existing wallet and route accordingly
-  const hasWallet = false;
+  const [hasWallet, setHasWallet] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    getAddress().then(addr => setHasWallet(!!addr)).catch(() => setHasWallet(false));
+  }, []);
+
+  if (hasWallet === null) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0a0a0a', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#00ff88" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>

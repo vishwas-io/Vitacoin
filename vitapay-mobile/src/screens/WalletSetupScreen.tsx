@@ -40,7 +40,7 @@ export default function WalletSetupScreen({ navigation }: any) {
     try {
       await saveMnemonic(mnemonic);
       await saveAddress(address);
-      navigation.replace('Main');
+      navigation.replace('App');
     } catch (e: any) {
       Alert.alert('Error', `Failed to save wallet: ${e.message}`);
     } finally {
@@ -54,7 +54,7 @@ export default function WalletSetupScreen({ navigation }: any) {
       const w = await importWalletLib(importMnemonic);
       await saveMnemonic(importMnemonic.trim());
       await saveAddress(w.address);
-      navigation.replace('Main');
+      navigation.replace('App');
     } catch (e: any) {
       Alert.alert('Import failed', e.message);
     } finally {
@@ -130,7 +130,7 @@ export default function WalletSetupScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: 24 },
+  container: { flex: 1, backgroundColor: COLORS.bg, padding: 24, paddingTop: 60 },
   logo: { fontSize: 40, fontWeight: 'bold', color: COLORS.accent, textAlign: 'center', marginTop: 60 },
   subtitle: { fontSize: 18, color: COLORS.muted, textAlign: 'center', marginBottom: 60 },
   title: { fontSize: 26, fontWeight: 'bold', color: COLORS.text, marginBottom: 16 },
