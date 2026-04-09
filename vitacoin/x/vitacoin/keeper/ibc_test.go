@@ -40,13 +40,13 @@ func ibcTestReceiver(t *testing.T) string {
 func (suite *IBCKeeperTestSuite) TestIBCSendVITA() {
 	sender := ibcTestSender(suite.T())
 	receiver := ibcTestReceiver(suite.T())
-	amount := sdk.NewCoin("avita", math.NewInt(1_000_000))
+	amount := sdk.NewCoin("uvita", math.NewInt(1_000_000))
 
 	err := suite.keeper.IBCSendVITA(suite.ctx, sender, receiver, "channel-0", amount, "test memo")
 	require.NoError(suite.T(), err)
 
 	// Module account should hold the escrowed coins.
-	escrowed := suite.bankKeeper.GetModuleBalance(types.ModuleName, "avita")
+	escrowed := suite.bankKeeper.GetModuleBalance(types.ModuleName, "uvita")
 	require.Equal(suite.T(), math.NewInt(1_000_000), escrowed, "module account should hold escrowed coins")
 
 	// KV should have exactly one pending packet.
@@ -59,7 +59,7 @@ func (suite *IBCKeeperTestSuite) TestIBCSendVITA() {
 	require.Equal(suite.T(), receiver, pkt.Receiver)
 	require.Equal(suite.T(), "channel-0", pkt.SourceChannel)
 	require.Equal(suite.T(), math.NewInt(1_000_000), pkt.Amount)
-	require.Equal(suite.T(), "avita", pkt.Denom)
+	require.Equal(suite.T(), "uvita", pkt.Denom)
 	require.Equal(suite.T(), uint64(1), pkt.Sequence)
 }
 
@@ -67,14 +67,14 @@ func (suite *IBCKeeperTestSuite) TestIBCSendVITA() {
 func (suite *IBCKeeperTestSuite) TestIBCSendVITA_Errors() {
 	sender := ibcTestSender(suite.T())
 	receiver := ibcTestReceiver(suite.T())
-	amount := sdk.NewCoin("avita", math.NewInt(500))
+	amount := sdk.NewCoin("uvita", math.NewInt(500))
 
 	// Empty receiver
 	err := suite.keeper.IBCSendVITA(suite.ctx, sender, "", "channel-0", amount, "")
 	require.ErrorIs(suite.T(), err, types.ErrInvalidReceiver)
 
 	// Zero amount
-	zero := sdk.NewCoin("avita", math.ZeroInt())
+	zero := sdk.NewCoin("uvita", math.ZeroInt())
 	err = suite.keeper.IBCSendVITA(suite.ctx, sender, receiver, "channel-0", zero, "")
 	require.ErrorIs(suite.T(), err, types.ErrInvalidAmount)
 
@@ -95,7 +95,7 @@ func (suite *IBCKeeperTestSuite) TestOnReceivePacket() {
 		Sender:        ibcTestSender(suite.T()),
 		Receiver:      receiver,
 		Amount:        math.NewInt(2_000_000),
-		Denom:         "avita",
+		Denom:         "uvita",
 		Memo:          "",
 		Sequence:      42,
 		SourceChannel: "channel-1",
@@ -123,7 +123,7 @@ func (suite *IBCKeeperTestSuite) TestOnReceivePacket_InvalidPacket() {
 
 func (suite *IBCKeeperTestSuite) TestOnAcknowledgePacket_Success() {
 	sender := ibcTestSender(suite.T())
-	amount := sdk.NewCoin("avita", math.NewInt(500_000))
+	amount := sdk.NewCoin("uvita", math.NewInt(500_000))
 
 	// First queue a packet so there is a pending record to delete.
 	err := suite.keeper.IBCSendVITA(suite.ctx, sender, ibcTestReceiver(suite.T()), "channel-0", amount, "")
@@ -148,7 +148,7 @@ func (suite *IBCKeeperTestSuite) TestOnAcknowledgePacket_Success() {
 
 func (suite *IBCKeeperTestSuite) TestOnAcknowledgePacket_Failure() {
 	sender := ibcTestSender(suite.T())
-	amount := sdk.NewCoin("avita", math.NewInt(300_000))
+	amount := sdk.NewCoin("uvita", math.NewInt(300_000))
 
 	err := suite.keeper.IBCSendVITA(suite.ctx, sender, ibcTestReceiver(suite.T()), "channel-0", amount, "")
 	require.NoError(suite.T(), err)
@@ -172,7 +172,7 @@ func (suite *IBCKeeperTestSuite) TestOnAcknowledgePacket_Failure() {
 
 func (suite *IBCKeeperTestSuite) TestOnTimeoutPacket() {
 	sender := ibcTestSender(suite.T())
-	amount := sdk.NewCoin("avita", math.NewInt(750_000))
+	amount := sdk.NewCoin("uvita", math.NewInt(750_000))
 
 	err := suite.keeper.IBCSendVITA(suite.ctx, sender, ibcTestReceiver(suite.T()), "channel-0", amount, "")
 	require.NoError(suite.T(), err)
@@ -199,7 +199,7 @@ func (suite *IBCKeeperTestSuite) TestOnTimeoutPacket() {
 func (suite *IBCKeeperTestSuite) TestIBCRoundTrip() {
 	sender := ibcTestSender(suite.T())
 	receiver := ibcTestReceiver(suite.T())
-	amount := sdk.NewCoin("avita", math.NewInt(9_999))
+	amount := sdk.NewCoin("uvita", math.NewInt(9_999))
 
 	err := suite.keeper.IBCSendVITA(suite.ctx, sender, receiver, "channel-99", amount, "round-trip")
 	require.NoError(suite.T(), err)

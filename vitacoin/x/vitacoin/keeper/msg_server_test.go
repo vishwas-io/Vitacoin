@@ -1214,7 +1214,7 @@ func (suite *KeeperTestSuite) TestRegisterMerchantFeeCollection() {
 
 	// Module should have received: registrationFee + stakeAmount
 	expected := registrationFee.Add(stakeAmount)
-	actual := suite.bankKeeper.GetModuleBalance("vitacoin", "avita")
+	actual := suite.bankKeeper.GetModuleBalance("vitacoin", "uvita")
 	suite.Require().Equal(expected, actual,
 		"module account balance should equal registration fee (%s) + stake (%s) = %s, got %s",
 		registrationFee, stakeAmount, expected, actual)

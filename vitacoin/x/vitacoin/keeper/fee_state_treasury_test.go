@@ -225,9 +225,9 @@ func (suite *FeeStateTreasuryTestSuite) TestGetTreasuryBalance() {
 }
 
 func (suite *FeeStateTreasuryTestSuite) TestGetTreasuryBalanceDenom() {
-	bal, err := suite.keeper.GetTreasuryBalanceDenom(suite.ctx, "avita")
+	bal, err := suite.keeper.GetTreasuryBalanceDenom(suite.ctx, "uvita")
 	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), "avita", bal.Denom)
+	require.Equal(suite.T(), "uvita", bal.Denom)
 }
 
 func (suite *FeeStateTreasuryTestSuite) TestGetVitaTreasuryBalance() {
@@ -269,7 +269,7 @@ func (suite *FeeStateTreasuryTestSuite) TestEstimateTreasuryRunway() {
 }
 
 func (suite *FeeStateTreasuryTestSuite) TestValidateTreasurySpending_InsufficientFunds() {
-	bigCoins := sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(999999999999)))
+	bigCoins := sdk.NewCoins(sdk.NewCoin("uvita", sdkmath.NewInt(999999999999)))
 	// Mock bank returns lots of coins, so this might pass — just ensure no panic
 	_ = suite.keeper.ValidateTreasurySpending(suite.ctx, bigCoins)
 }
@@ -279,7 +279,7 @@ func (suite *FeeStateTreasuryTestSuite) TestTreasurySpending_SetGet() {
 		Id:          "spend-1",
 		ProposalId:  1,
 		Recipient:   sdk.AccAddress([]byte("spend_recipient_____")).String(),
-		Amount:      sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(100))),
+		Amount:      sdk.NewCoins(sdk.NewCoin("uvita", sdkmath.NewInt(100))),
 		Purpose:     "testing",
 		SpentHeight: 5,
 		SpentTime:   time.Now().UTC().Unix(),
@@ -298,7 +298,7 @@ func (suite *FeeStateTreasuryTestSuite) TestGetAllTreasurySpending() {
 			Id:          fmt.Sprintf("all-spend-%d", i),
 			ProposalId:  uint64(i),
 			Recipient:   sdk.AccAddress([]byte(fmt.Sprintf("rcpt%d_______________", i)[:20])).String(),
-			Amount:      sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(100))),
+			Amount:      sdk.NewCoins(sdk.NewCoin("uvita", sdkmath.NewInt(100))),
 			Purpose:     "batch test",
 			SpentHeight: int64(i + 1),
 			SpentTime:   time.Now().UTC().Unix(),
@@ -316,7 +316,7 @@ func (suite *FeeStateTreasuryTestSuite) TestGetTreasurySpendingByProposal() {
 		Id:          "prop-spend-1",
 		ProposalId:  42,
 		Recipient:   sdk.AccAddress([]byte("prop_recipient______")).String(),
-		Amount:      sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(200))),
+		Amount:      sdk.NewCoins(sdk.NewCoin("uvita", sdkmath.NewInt(200))),
 		Purpose:     "proposal test",
 		SpentHeight: 1,
 		SpentTime:   time.Now().UTC().Unix(),
@@ -334,7 +334,7 @@ func (suite *FeeStateTreasuryTestSuite) TestGetTreasurySpendingByRecipient() {
 		Id:          "rcpt-spend-1",
 		ProposalId:  7,
 		Recipient:   recipient,
-		Amount:      sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(300))),
+		Amount:      sdk.NewCoins(sdk.NewCoin("uvita", sdkmath.NewInt(300))),
 		Purpose:     "recipient filter test",
 		SpentHeight: 1,
 		SpentTime:   time.Now().UTC().Unix(),
@@ -352,7 +352,7 @@ func (suite *FeeStateTreasuryTestSuite) TestGetTreasurySpendingInRange() {
 			Id:          fmt.Sprintf("range-spend-%d", i),
 			ProposalId:  uint64(i),
 			Recipient:   sdk.AccAddress([]byte(fmt.Sprintf("range_rcpt%d_________", i)[:20])).String(),
-			Amount:      sdk.NewCoins(sdk.NewCoin("avita", sdkmath.NewInt(50))),
+			Amount:      sdk.NewCoins(sdk.NewCoin("uvita", sdkmath.NewInt(50))),
 			Purpose:     "range test",
 			SpentHeight: i,
 			SpentTime:   time.Now().UTC().Unix(),

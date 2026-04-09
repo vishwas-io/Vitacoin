@@ -17,7 +17,7 @@ const (
 	TreasuryModuleName = "vitacoin_treasury"
 
 	// BondDenom is the staking bond denomination for VitaCoin
-	BondDenom = "avita"
+	BondDenom = "uvita"
 
 	// Phase 4: Staking Store Key Prefixes (as byte constants)
 	StakingDelegationPrefixByte = 0x10

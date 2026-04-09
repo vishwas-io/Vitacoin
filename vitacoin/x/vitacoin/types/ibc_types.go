@@ -44,7 +44,7 @@ type VITAPacketData struct {
 	// Amount is the quantity of VITA being transferred (in base denomination).
 	Amount math.Int `json:"amount"`
 
-	// Denom is the token denomination (e.g. "avita").
+	// Denom is the token denomination (e.g. "uvita").
 	Denom string `json:"denom"`
 
 	// Memo is an optional human-readable note (max MaxIBCMemo bytes).

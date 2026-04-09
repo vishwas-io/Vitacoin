@@ -63,7 +63,7 @@ func (k Keeper) EscrowPaymentFunds(ctx context.Context, fromAddr sdk.AccAddress,
 	}
 
 	// Create coins for transfer
-	coins := sdk.NewCoins(sdk.NewCoin("avita", amount))
+	coins := sdk.NewCoins(sdk.NewCoin("uvita", amount))
 
 	// Transfer from payer to module account
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(
@@ -99,7 +99,7 @@ func (k Keeper) ReleasePaymentFunds(
 	}
 
 	// Send net amount to merchant
-	netCoins := sdk.NewCoins(sdk.NewCoin("avita", netAmount))
+	netCoins := sdk.NewCoins(sdk.NewCoin("uvita", netAmount))
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
@@ -148,7 +148,7 @@ func (k Keeper) RefundPaymentFunds(ctx context.Context, toAddr sdk.AccAddress, a
 	}
 
 	// Transfer from module account back to payer
-	coins := sdk.NewCoins(sdk.NewCoin("avita", amount))
+	coins := sdk.NewCoins(sdk.NewCoin("uvita", amount))
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		types.ModuleName,
@@ -258,7 +258,7 @@ func (k Keeper) DistributeProtocolFees(ctx context.Context) error {
 		}
 
 		if canBurn {
-			burnCoins := sdk.NewCoins(sdk.NewCoin("avita", burnAmount))
+			burnCoins := sdk.NewCoins(sdk.NewCoin("uvita", burnAmount))
 			if err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, burnCoins); err != nil {
 				return fmt.Errorf("failed to burn coins: %w", err)
 			}
@@ -278,7 +278,7 @@ func (k Keeper) DistributeProtocolFees(ctx context.Context) error {
 
 	// 2. Send to validators via FeeCollector (x/distribution handles it)
 	if !validatorAmount.IsZero() {
-		validatorCoins := sdk.NewCoins(sdk.NewCoin("avita", validatorAmount))
+		validatorCoins := sdk.NewCoins(sdk.NewCoin("uvita", validatorAmount))
 		if err := k.bankKeeper.SendCoinsFromModuleToModule(
 			ctx,
 			types.ModuleName,
@@ -291,7 +291,7 @@ func (k Keeper) DistributeProtocolFees(ctx context.Context) error {
 
 	// 3. Send to treasury module account
 	if !treasuryAmount.IsZero() {
-		treasuryCoins := sdk.NewCoins(sdk.NewCoin("avita", treasuryAmount))
+		treasuryCoins := sdk.NewCoins(sdk.NewCoin("uvita", treasuryAmount))
 		if err := k.bankKeeper.SendCoinsFromModuleToModule(
 			ctx,
 			types.ModuleName,

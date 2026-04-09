@@ -97,7 +97,7 @@ func (ms msgServer) RegisterMerchant(ctx context.Context, msg *types.MsgRegister
 	}
 
 	if !params.MerchantRegistrationFee.IsZero() {
-		feeCoins := sdk.NewCoins(sdk.NewCoin("avita", params.MerchantRegistrationFee))
+		feeCoins := sdk.NewCoins(sdk.NewCoin("uvita", params.MerchantRegistrationFee))
 		if err := ms.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, feeCoins); err != nil {
 			return nil, fmt.Errorf("failed to collect merchant registration fee: %w", err)
 		}
@@ -105,7 +105,7 @@ func (ms msgServer) RegisterMerchant(ctx context.Context, msg *types.MsgRegister
 
 	// Phase 3: Collect initial stake from sender
 	if !msg.StakeAmount.IsZero() {
-		stakeCoins := sdk.NewCoins(sdk.NewCoin("avita", msg.StakeAmount))
+		stakeCoins := sdk.NewCoins(sdk.NewCoin("uvita", msg.StakeAmount))
 		if err := ms.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, stakeCoins); err != nil {
 			return nil, fmt.Errorf("failed to collect merchant stake: %w", err)
 		}
@@ -188,7 +188,7 @@ func (ms msgServer) UpdateMerchant(ctx context.Context, msg *types.MsgUpdateMerc
 		if err != nil {
 			return nil, fmt.Errorf("invalid sender address for stake collection: %w", err)
 		}
-		stakeCoins := sdk.NewCoins(sdk.NewCoin("avita", msg.AdditionalStake))
+		stakeCoins := sdk.NewCoins(sdk.NewCoin("uvita", msg.AdditionalStake))
 		if err := ms.Keeper.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, stakeCoins); err != nil {
 			return nil, fmt.Errorf("failed to collect additional stake: %w", err)
 		}
@@ -461,7 +461,7 @@ func (ms msgServer) RefundPayment(ctx context.Context, msg *types.MsgRefundPayme
 	// Future enhancement: Implement actual refund transfer
 	// merchantAddr, _ := sdk.AccAddressFromBech32(payment.ToAddress)
 	// payerAddr, _ := sdk.AccAddressFromBech32(payment.FromAddress)
-	// refundCoins := sdk.NewCoins(sdk.NewCoin("avita", payment.Amount))
+	// refundCoins := sdk.NewCoins(sdk.NewCoin("uvita", payment.Amount))
 	// err = ms.Keeper.bankKeeper.SendCoins(ctx, merchantAddr, payerAddr, refundCoins)
 
 	ms.Keeper.Logger().Info("payment marked as refunded",

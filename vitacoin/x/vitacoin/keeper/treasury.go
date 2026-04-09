@@ -106,7 +106,7 @@ func (k Keeper) GetTreasuryBalanceDenom(ctx context.Context, denom string) (sdk.
 // Convenience method for the primary token denomination
 func (k Keeper) GetVitaTreasuryBalance(ctx context.Context) (math.Int, error) {
 	// Use native denom (avita) - BondDenom not in params yet
-	balance, err := k.GetTreasuryBalanceDenom(ctx, "avita")
+	balance, err := k.GetTreasuryBalanceDenom(ctx, "uvita")
 	if err != nil {
 		return math.ZeroInt(), err
 	}
@@ -223,8 +223,8 @@ func (k Keeper) ValidateTreasurySpending(ctx context.Context, amount sdk.Coins) 
 	
 	// Additional validation: ensure we're not spending the entire treasury
 	// Keep at least 1% as buffer for safety
-	vitaBalance := treasuryBalance.AmountOf("avita")
-	requestedVita := amount.AmountOf("avita")
+	vitaBalance := treasuryBalance.AmountOf("uvita")
+	requestedVita := amount.AmountOf("uvita")
 	
 	if !requestedVita.IsZero() {
 		// Calculate 99% of balance
@@ -388,7 +388,7 @@ func (k Keeper) GetTreasuryStatistics(ctx context.Context) (*types.TreasuryStati
 	
 	stats := &types.TreasuryStatistics{
 		CurrentBalance:     balance,
-		TotalDeposited:     sdk.NewCoins(sdk.NewCoin("avita", feeStats.TotalToTreasuryAllTime)),
+		TotalDeposited:     sdk.NewCoins(sdk.NewCoin("uvita", feeStats.TotalToTreasuryAllTime)),
 		TotalSpent:         totalSpent,
 		SpendingCount:      uint64(len(allSpending)),
 		LastUpdateHeight:   sdkCtx.BlockHeight(),
@@ -501,7 +501,7 @@ func (k Keeper) EstimateTreasuryRunway(ctx context.Context) (int64, error) {
 	// Calculate total spent amount (in avita)
 	totalSpent := math.ZeroInt()
 	for _, spending := range allSpending {
-		totalSpent = totalSpent.Add(spending.Amount.AmountOf("avita"))
+		totalSpent = totalSpent.Add(spending.Amount.AmountOf("uvita"))
 	}
 	
 	if totalSpent.IsZero() {

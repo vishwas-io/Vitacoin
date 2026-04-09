@@ -103,7 +103,7 @@ func (k Keeper) ValidateTreasurySpendProposal(ctx context.Context, proposal *typ
 	}
 	
 	// Validate amount is reasonable (not dust, not excessive)
-	vitaAmount := proposal.Amount.AmountOf("avita")
+	vitaAmount := proposal.Amount.AmountOf("uvita")
 	if !vitaAmount.IsZero() {
 		// Minimum spend: 1 VITA (prevents spam proposals)
 		minSpend := math.NewInt(1_000_000_000_000_000_000) // 1 VITA in avita
@@ -154,8 +154,8 @@ func (k Keeper) EstimateTreasurySpendImpact(
 	}
 	
 	// Estimate new runway (simplified - assumes same spending rate)
-	vitaBalance := newBalance.AmountOf("avita")
-	currentVitaBalance := currentBalance.AmountOf("avita")
+	vitaBalance := newBalance.AmountOf("uvita")
+	currentVitaBalance := currentBalance.AmountOf("uvita")
 	
 	var newRunway int64
 	if currentRunway > 0 && !currentVitaBalance.IsZero() {

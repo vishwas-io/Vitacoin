@@ -296,7 +296,7 @@ func (k Keeper) CreateSupplySnapshot(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	
 	// Get total supply from bank keeper
-	totalSupply := k.bankKeeper.GetSupply(ctx, "avita")
+	totalSupply := k.bankKeeper.GetSupply(ctx, "uvita")
 	
 	// Calculate circulating supply (total - locked/vested/module accounts)
 	// For now, use simplified calculation

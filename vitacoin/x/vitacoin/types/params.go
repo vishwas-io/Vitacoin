@@ -8,10 +8,10 @@ import (
 
 // DefaultParams returns default module parameters
 func DefaultParams() Params {
-	oneVITA := math.NewInt(1000000000000000000) // 1e18 avita = 1 VITA
+	oneVITA := math.NewInt(1000000) // 1e6 uvita = 1 VITA
 	
 	return Params{
-		MinGasPrice:             math.LegacyNewDecWithPrec(1, 3), // 0.001 avita
+		MinGasPrice:             math.LegacyNewDecWithPrec(25, 3), // 0.025 uvita
 		TransactionFeePercent:   math.LegacyNewDecWithPrec(1, 3), // 0.1% (was 0.1 = 10%)
 		MerchantFeeDiscount:     math.LegacyZeroDec(),            // 0% discount (disabled for mainnet)
 		MaxTransactionAmount:    math.NewInt(0),                  // No limit
@@ -26,9 +26,9 @@ func DefaultParams() Params {
 		FeeBurnPercent:         math.LegacyNewDecWithPrec(40, 2),  // 40% burn
 		FeeValidatorPercent:    math.LegacyNewDecWithPrec(40, 2),  // 40% to validators
 		FeeTreasuryPercent:     math.LegacyNewDecWithPrec(20, 2),  // 20% to treasury
-		MinProtocolFee:         math.NewInt(1000000000000000),      // 0.001 VITA (1e15 avita)
-		MaxProtocolFee:         math.NewInt(100).Mul(oneVITA),      // 100 VITA
-		BurnCapSupply:          math.NewInt(100000000).Mul(oneVITA), // 100M VITA minimum supply (aggressive deflation)
+		MinProtocolFee:         math.NewInt(1000),                    // 0.001 VITA (1000 uvita)
+		MaxProtocolFee:         math.NewInt(100000000),               // 100 VITA (100 * 1e6 uvita)
+		BurnCapSupply:          math.NewInt(100000000000000),         // 100M VITA (100M * 1e6 uvita)
 		PausedFeeCollection:    false,
 		PausedFeeDistribution:  false,
 		
