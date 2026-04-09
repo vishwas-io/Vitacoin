@@ -29,7 +29,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	bankcli "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	govcli "github.com/cosmos/cosmos-sdk/x/gov/client/cli"
+	stakingcli "github.com/cosmos/cosmos-sdk/x/staking/client/cli"
 
 	"github.com/vitacoin/vitacoin/vitacoin/app"
 )
@@ -167,13 +171,13 @@ func queryCommand(basicManager module.BasicManager) *cobra.Command {
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
-	// Add all module query commands (bank, staking, gov, distribution, etc.)
-	basicManager.AddQueryCommands(cmd)
-
 	return cmd
 }
 
 func txCommand(basicManager module.BasicManager) *cobra.Command {
+	ac := authcodec.NewBech32Codec(sdk.Bech32MainPrefix)
+	vc := authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr)
+
 	cmd := &cobra.Command{
 		Use:                        "tx",
 		Short:                      "Transactions subcommands",
@@ -192,11 +196,19 @@ func txCommand(basicManager module.BasicManager) *cobra.Command {
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
 		authcmd.GetSimulateCmd(),
+		// Module tx commands
+		bankcli.NewSendTxCmd(ac),
+		bankcli.NewMultiSendTxCmd(ac),
+		stakingcli.NewDelegateCmd(vc, ac),
+		stakingcli.NewUnbondCmd(vc, ac),
+		stakingcli.NewRedelegateCmd(vc, ac),
+		stakingcli.NewCreateValidatorCmd(ac),
+		stakingcli.NewEditValidatorCmd(vc),
+		govcli.NewCmdSubmitProposal(),
+		govcli.NewCmdVote(),
+		govcli.NewCmdDeposit(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
-
-	// Add all module tx commands (bank send, staking delegate, gov submit-proposal, etc.)
-	basicManager.AddTxCommands(cmd)
 
 	return cmd
 }
