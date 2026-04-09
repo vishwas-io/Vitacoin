@@ -224,7 +224,7 @@ func NewVitacoinApp(
 		vitacointypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
-	memKeys := storetypes.NewMemoryStoreKeys()
+	memKeys := storetypes.NewMemoryStoreKeys(vitacointypes.MemStoreKey)
 
 	app := &VitacoinApp{
 		BaseApp:           bApp,
