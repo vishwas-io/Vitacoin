@@ -14,6 +14,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
+	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -33,6 +34,7 @@ import (
 	bankcli "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	govcli "github.com/cosmos/cosmos-sdk/x/gov/client/cli"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingcli "github.com/cosmos/cosmos-sdk/x/staking/client/cli"
 
 	"github.com/vitacoin/vitacoin/vitacoin/app"
@@ -208,6 +210,7 @@ func txCommand(basicManager module.BasicManager) *cobra.Command {
 		govcli.NewCmdSubmitProposal(),
 		govcli.NewCmdVote(),
 		govcli.NewCmdDeposit(),
+		newUnjailCmd(),
 		// VitaCoin custom module
 		vitacoincli.GetTxCmd(),
 	)
@@ -274,4 +277,25 @@ func (o *simpleAppOptions) Get(key string) interface{} {
 		return o.homeDir
 	}
 	return nil
+}
+
+// newUnjailCmd returns a CLI command to unjail a jailed validator.
+func newUnjailCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "unjail",
+		Short: "Unjail a jailed validator",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			valAddr := sdk.ValAddress(clientCtx.GetFromAddress())
+			msg := &slashingtypes.MsgUnjail{
+				ValidatorAddr: valAddr.String(),
+			}
+			return clienttx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
