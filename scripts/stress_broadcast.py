@@ -82,7 +82,7 @@ DEFAULT_DURATION   = 30
 DEFAULT_RAMP_UP    = 5
 DEFAULT_WORKERS    = 20
 DENOM              = "uvita"
-DEST_ADDR          = "vita1qyqa2zn5c925yycqv2qy9nm0ywxlf6zmdlq6dz"  # burn/dummy addr
+DEST_ADDR          = "cosmos1rh5vuyeh2dm4afm6hzldrj368s27pq6wvsn6td"  # faucet addr
 GAS_LIMIT          = 80000
 FEE_AMOUNT         = "2000uvita"
 MIN_AMOUNT         = 1
@@ -141,12 +141,11 @@ def presign_tx(vitacoind: str, keyring_dir: str, chain_id: str,
     """Generate and sign a tx offline, return the signed tx JSON dict."""
     # Step 1: generate-only
     gen_cmd = [
-        vitacoind, "tx", "bank", "send",
+        vitacoind, "tx", "send",
         from_addr, to_addr, f"{amount}{denom}",
         "--chain-id", chain_id,
         "--gas", str(GAS_LIMIT),
         "--fees", FEE_AMOUNT,
-        "--memo", memo,
         "--note", memo,
         "--sequence", str(sequence),
         "--account-number", str(account_number),
