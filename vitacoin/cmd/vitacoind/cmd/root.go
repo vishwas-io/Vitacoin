@@ -203,7 +203,7 @@ func txCommand(basicManager module.BasicManager) *cobra.Command {
 		stakingcli.NewDelegateCmd(vc, ac),
 		stakingcli.NewUnbondCmd(vc, ac),
 		stakingcli.NewRedelegateCmd(vc, ac),
-		stakingcli.NewCreateValidatorCmd(ac),
+		stakingcli.NewCreateValidatorCmd(vc),
 		stakingcli.NewEditValidatorCmd(vc),
 		govcli.NewCmdSubmitProposal(),
 		govcli.NewCmdVote(),
