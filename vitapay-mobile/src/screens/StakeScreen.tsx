@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { getValidators, getDelegations, delegateVITA, claimRewards, Validator, Delegation } from '../lib/staking';
 import { getAddress, getMnemonic } from '../lib/storage';
+import BiometricGate from '../components/BiometricGate';
 
 const COLORS = {
   bg: '#0a0a0a', card: '#141414', accent: '#00ff88',
@@ -206,15 +207,17 @@ export default function StakeScreen() {
             placeholderTextColor={COLORS.muted}
             keyboardType="decimal-pad"
           />
-          <TouchableOpacity
-            style={[styles.btn, staking && styles.btnDisabled]}
-            onPress={onDelegate}
-            disabled={staking}
-          >
-            {staking
-              ? <ActivityIndicator color={COLORS.bg} />
-              : <Text style={styles.btnText}>Delegate</Text>}
-          </TouchableOpacity>
+          <BiometricGate reason="Confirm to delegate VITA">
+            <TouchableOpacity
+              style={[styles.btn, staking && styles.btnDisabled]}
+              onPress={onDelegate}
+              disabled={staking}
+            >
+              {staking
+                ? <ActivityIndicator color={COLORS.bg} />
+                : <Text style={styles.btnText}>Delegate</Text>}
+            </TouchableOpacity>
+          </BiometricGate>
         </View>
       )}
     </ScrollView>

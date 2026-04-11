@@ -6,6 +6,7 @@ import { Camera, CameraView, BarcodeScanningResult } from 'expo-camera';
 import { PaymentRequest } from '../types/wallet';
 import { parsePaymentQR, executePayment } from '../lib/payments';
 import { getMnemonic } from '../lib/storage';
+import BiometricGate from '../components/BiometricGate';
 
 const COLORS = {
   bg: '#0a0a0a', card: '#141414', accent: '#00ff88',
@@ -134,15 +135,17 @@ export default function PayScreen() {
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setPayment(null)}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btn, paying && styles.btnDisabled, { flex: 1 }]}
-              onPress={onPay}
-              disabled={paying}
-            >
-              {paying
-                ? <ActivityIndicator color={COLORS.bg} />
-                : <Text style={styles.btnText}>Pay Now</Text>}
-            </TouchableOpacity>
+            <BiometricGate reason="Confirm payment execution">
+              <TouchableOpacity
+                style={[styles.btn, paying && styles.btnDisabled, { flex: 1 }]}
+                onPress={onPay}
+                disabled={paying}
+              >
+                {paying
+                  ? <ActivityIndicator color={COLORS.bg} />
+                  : <Text style={styles.btnText}>Pay Now</Text>}
+              </TouchableOpacity>
+            </BiometricGate>
           </View>
         </View>
       )}

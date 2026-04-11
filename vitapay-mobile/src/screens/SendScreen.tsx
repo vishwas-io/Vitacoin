@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { sendVITA, estimateFee } from '../lib/wallet';
 import { getMnemonic } from '../lib/storage';
+import BiometricGate from '../components/BiometricGate';
 
 const COLORS = { bg: '#0a0a0a', card: '#141414', accent: '#00ff88', text: '#ffffff', muted: '#888888', error: '#ff4444' };
 
@@ -63,9 +64,11 @@ export default function SendScreen({ navigation }: any) {
         placeholder="Payment memo" placeholderTextColor={COLORS.muted}
       />
       {fee && <Text style={styles.fee}>Estimated fee: {fee} VITA</Text>}
-      <TouchableOpacity style={[styles.btn, sending && styles.btnDisabled]} onPress={onSend} disabled={sending}>
-        {sending ? <ActivityIndicator color={COLORS.bg} /> : <Text style={styles.btnText}>Send</Text>}
-      </TouchableOpacity>
+      <BiometricGate reason="Confirm to send VITA">
+        <TouchableOpacity style={[styles.btn, sending && styles.btnDisabled]} onPress={onSend} disabled={sending}>
+          {sending ? <ActivityIndicator color={COLORS.bg} /> : <Text style={styles.btnText}>Send</Text>}
+        </TouchableOpacity>
+      </BiometricGate>
     </View>
   );
 }
