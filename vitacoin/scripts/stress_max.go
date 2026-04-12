@@ -1,3 +1,6 @@
+//go:build ignore
+// +build ignore
+
 // stress_max.go — VitaCoin Max Throughput Stress Test
 // Goal: find the actual chain limit by maximizing tx throughput
 // Strategy: Pre-sign sequence slots, fire parallel CLI calls

@@ -106,12 +106,12 @@ func TestAdvancedValidation_PaymentAmount(t *testing.T) {
 	}{
 		{
 			name:        "valid amount",
-			amount:      math.NewInt(1e18), // 1 VITA
+			amount:      math.NewInt(1000000), // 1 VITA in uvita
 			expectError: false,
 		},
 		{
 			name:        "minimum valid amount",
-			amount:      math.NewInt(1e15), // 0.001 VITA (updated minimum)
+			amount:      math.NewInt(1000), // MinPaymentAmount (0.001 VITA)
 			expectError: false,
 		},
 		{
@@ -128,13 +128,13 @@ func TestAdvancedValidation_PaymentAmount(t *testing.T) {
 		},
 		{
 			name:        "amount too small",
-			amount:      math.NewInt(1e14), // Less than minimum (1e15)
+			amount:      math.NewInt(999), // Less than MinPaymentAmount (1000)
 			expectError: true,
 			errorMsg:    "must be at least",
 		},
 		{
-			name:        "stake amount too large",
-			amount:      math.NewInt(1000000).Mul(math.NewInt(1000000000000000000)).Add(math.NewInt(1)), // > 1M VITA
+			name:        "amount too large",
+			amount:      math.NewInt(1000000000000).Add(math.NewInt(1)), // > MaxPaymentAmount (1e12)
 			expectError: true,
 			errorMsg:    "maximum allowed",
 		},
@@ -164,12 +164,12 @@ func TestAdvancedValidation_VaultAmount(t *testing.T) {
 	}{
 		{
 			name:        "valid vault amount",
-			amount:      math.NewInt(1e18), // 1 VITA
+			amount:      math.NewInt(1000000), // 1 VITA (MinVaultAmount)
 			expectError: false,
 		},
 		{
 			name:        "large valid amount",
-			amount:      math.NewInt(1000000).Mul(math.NewInt(1000000000000000000)), // 1M VITA
+			amount:      math.NewInt(10000000000000), // 10M VITA (MaxVaultAmount)
 			expectError: false,
 		},
 		{
@@ -180,13 +180,13 @@ func TestAdvancedValidation_VaultAmount(t *testing.T) {
 		},
 		{
 			name:        "amount below minimum",
-			amount:      math.NewInt(1e17), // 0.1 VITA
+			amount:      math.NewInt(999999), // Below MinVaultAmount (1e6)
 			expectError: true,
 			errorMsg:    "must be at least",
 		},
 		{
 			name:        "amount too large",
-			amount:      math.NewInt(10000000).Mul(math.NewInt(1000000000000000000)).Add(math.NewInt(1)), // > 10M VITA
+			amount:      math.NewInt(10000000000000).Add(math.NewInt(1)), // > MaxVaultAmount
 			expectError: true,
 			errorMsg:    "maximum allowed",
 		},
@@ -385,7 +385,7 @@ func TestAdvancedValidation_RewardDistribution(t *testing.T) {
 		{
 			name:       "valid distribution",
 			recipients: []string{validAddress1, validAddress2},
-			amounts:    []math.Int{math.NewInt(1e18), math.NewInt(2e18)},
+			amounts:    []math.Int{math.NewInt(1000000), math.NewInt(2000000)},
 			expectError: false,
 		},
 		{
@@ -398,21 +398,21 @@ func TestAdvancedValidation_RewardDistribution(t *testing.T) {
 		{
 			name:        "mismatched lengths",
 			recipients:  []string{validAddress1, validAddress2},
-			amounts:     []math.Int{math.NewInt(1e18)},
+			amounts:     []math.Int{math.NewInt(1000000)},
 			expectError: true,
 			errorMsg:    "same length",
 		},
 		{
 			name:        "invalid recipient address",
 			recipients:  []string{invalidAddress},
-			amounts:     []math.Int{math.NewInt(1e18)},
+			amounts:     []math.Int{math.NewInt(1000000)},
 			expectError: true,
 			errorMsg:    "invalid recipient address",
 		},
 		{
 			name:        "duplicate recipients",
 			recipients:  []string{validAddress1, validAddress1},
-			amounts:     []math.Int{math.NewInt(1e18), math.NewInt(2e18)},
+			amounts:     []math.Int{math.NewInt(1000000), math.NewInt(2000000)},
 			expectError: true,
 			errorMsg:    "duplicate recipient",
 		},
@@ -426,7 +426,7 @@ func TestAdvancedValidation_RewardDistribution(t *testing.T) {
 		{
 			name:        "amount too small",
 			recipients:  []string{validAddress1},
-			amounts:     []math.Int{math.NewInt(1e14)}, // Below minimum
+			amounts:     []math.Int{math.NewInt(999)}, // Below MinPoolAmount (1000)
 			expectError: true,
 			errorMsg:    "too small",
 		},
@@ -666,7 +666,7 @@ func BenchmarkBusinessNameValidation(b *testing.B) {
 }
 
 func BenchmarkPaymentAmountValidation(b *testing.B) {
-	amount := math.NewInt(1e18)
+	amount := math.NewInt(1000000) // 1 VITA in uvita
 	b.ResetTimer()
 	
 	for i := 0; i < b.N; i++ {
@@ -676,7 +676,7 @@ func BenchmarkPaymentAmountValidation(b *testing.B) {
 
 func BenchmarkRewardDistributionValidation(b *testing.B) {
 	recipients := []string{validAddress1, validAddress2}
-	amounts := []math.Int{math.NewInt(1e18), math.NewInt(2e18)}
+	amounts := []math.Int{math.NewInt(1000000), math.NewInt(2000000)}
 	b.ResetTimer()
 	
 	for i := 0; i < b.N; i++ {

@@ -16,9 +16,9 @@ func TestDefaultParams(t *testing.T) {
 	require.NoError(t, params.Validate())
 
 	// Verify default values
-	require.Equal(t, math.LegacyNewDecWithPrec(1, 3), params.MinGasPrice)
+	require.Equal(t, math.LegacyNewDecWithPrec(25, 3), params.MinGasPrice) // 0.025 uvita
 	require.Equal(t, math.LegacyNewDecWithPrec(1, 3), params.TransactionFeePercent) // 0.1%
-	require.Equal(t, math.LegacyZeroDec(), params.MerchantFeeDiscount) // 50%
+	require.Equal(t, math.LegacyZeroDec(), params.MerchantFeeDiscount)
 	require.True(t, params.EnableMerchantLoyalty)
 	require.True(t, params.EnableInstantSettlement)
 }

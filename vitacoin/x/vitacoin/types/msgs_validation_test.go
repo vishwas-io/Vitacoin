@@ -161,7 +161,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: validMerchant,
-				Amount:          math.NewInt(1000000000000000), // 0.001 VITA minimum
+				Amount:          math.NewInt(1000000), // 0.001 VITA minimum
 				Memo:            "Test payment",
 			},
 			expectErr: false,
@@ -171,7 +171,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          "invalid",
 				MerchantAddress: validMerchant,
-				Amount:          math.NewInt(1000000000000000),
+				Amount:          math.NewInt(1000000),
 				Memo:            "Test payment",
 			},
 			expectErr: true,
@@ -182,7 +182,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: "invalid",
-				Amount:          math.NewInt(1000000000000000),
+				Amount:          math.NewInt(1000000),
 				Memo:            "Test payment",
 			},
 			expectErr: true,
@@ -193,7 +193,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: validSender,
-				Amount:          math.NewInt(1000000000000000),
+				Amount:          math.NewInt(1000000),
 				Memo:            "Test payment",
 			},
 			expectErr: true,
@@ -215,7 +215,7 @@ func TestMsgCreatePaymentValidateBasic(t *testing.T) {
 			msg: &types.MsgCreatePayment{
 				Sender:          validSender,
 				MerchantAddress: validMerchant,
-				Amount:          math.NewInt(1000000000000000),
+				Amount:          math.NewInt(1000000),
 				Memo:            string(make([]byte, 257)), // 257 characters
 			},
 			expectErr: true,
@@ -249,7 +249,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "valid message",
 			msg: &types.MsgCreateVault{
 				Sender:       validAddress,
-				Amount:       math.NewInt(1000000000000000000), // 1 VITA minimum
+				Amount:       math.NewInt(1000000), // 1 VITA minimum
 				LockDuration: 1000,
 			},
 			expectErr: false,
@@ -258,7 +258,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "invalid sender address",
 			msg: &types.MsgCreateVault{
 				Sender:       "invalid",
-				Amount:       math.NewInt(1000000000000000000),
+				Amount:       math.NewInt(1000000),
 				LockDuration: 1000,
 			},
 			expectErr: true,
@@ -278,7 +278,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "zero lock duration",
 			msg: &types.MsgCreateVault{
 				Sender:       validAddress,
-				Amount:       math.NewInt(1000000000000000000),
+				Amount:       math.NewInt(1000000),
 				LockDuration: 0,
 			},
 			expectErr: true,
@@ -288,7 +288,7 @@ func TestMsgCreateVaultValidateBasic(t *testing.T) {
 			name: "lock duration too long",
 			msg: &types.MsgCreateVault{
 				Sender:       validAddress,
-				Amount:       math.NewInt(1000000000000000000),
+				Amount:       math.NewInt(1000000),
 				LockDuration: 10_000_000, // More than max (5.256M)
 			},
 			expectErr: true,
@@ -326,7 +326,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1, validRecipient2},
-				Amounts:    []math.Int{math.NewInt(1000000000000000), math.NewInt(2000000000000000)}, // 0.001 VITA min
+				Amounts:    []math.Int{math.NewInt(1000000), math.NewInt(2000000)}, // 0.001 VITA min
 			},
 			expectErr: false,
 		},
@@ -336,7 +336,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     "invalid",
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1},
-				Amounts:    []math.Int{math.NewInt(1000000000000000)},
+				Amounts:    []math.Int{math.NewInt(1000000)},
 			},
 			expectErr: true,
 			errMsg:    "invalid sender address",
@@ -347,7 +347,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "",
 				Recipients: []string{validRecipient1},
-				Amounts:    []math.Int{math.NewInt(1000000000000000)},
+				Amounts:    []math.Int{math.NewInt(1000000)},
 			},
 			expectErr: true,
 			errMsg:    "pool ID cannot be empty",
@@ -369,7 +369,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1, validRecipient2},
-				Amounts:    []math.Int{math.NewInt(1000000000000000)}, // Only 1 amount for 2 recipients
+				Amounts:    []math.Int{math.NewInt(1000000)}, // Only 1 amount for 2 recipients
 			},
 			expectErr: true,
 			errMsg:    "recipients and amounts lists must have the same length",
@@ -380,7 +380,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{"invalid"},
-				Amounts:    []math.Int{math.NewInt(1000000000000000)},
+				Amounts:    []math.Int{math.NewInt(1000000)},
 			},
 			expectErr: true,
 			errMsg:    "invalid recipient address",
@@ -391,7 +391,7 @@ func TestMsgDistributeRewardsValidateBasic(t *testing.T) {
 				Sender:     validSender,
 				PoolId:     "pool-1",
 				Recipients: []string{validRecipient1, validRecipient1},
-				Amounts:    []math.Int{math.NewInt(1000000000000000), math.NewInt(2000000000000000)},
+				Amounts:    []math.Int{math.NewInt(1000000), math.NewInt(2000000)},
 			},
 			expectErr: true,
 			errMsg:    "duplicate recipient address",

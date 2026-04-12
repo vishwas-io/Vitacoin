@@ -16,10 +16,10 @@ func DefaultParams() Params {
 		MerchantFeeDiscount:     math.LegacyZeroDec(),            // 0% discount (disabled for mainnet)
 		MaxTransactionAmount:    math.NewInt(0),                  // No limit
 		PaymentTimeoutBlocks:    100,                             // ~10 minutes at 6s blocks
-		MerchantRegistrationFee: math.NewInt(1000).Mul(oneVITA), // 1000 VITA
+		MerchantRegistrationFee: math.NewInt(10).Mul(oneVITA), // 10 VITA (testnet-friendly)
 		EnableMerchantLoyalty:   true,
 		LoyaltyRewardPercent:    math.LegacyNewDecWithPrec(1, 2), // 1%
-		MinMerchantStake:        math.NewInt(1000).Mul(oneVITA),  // 1000 VITA - Bronze tier
+		MinMerchantStake:        math.NewInt(10).Mul(oneVITA),  // 10 VITA - testnet minimum (prod: 1000 VITA)
 		EnableInstantSettlement: true,
 		
 		// Phase 3: Fee Distribution Parameters

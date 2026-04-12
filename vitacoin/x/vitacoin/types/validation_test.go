@@ -184,7 +184,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: validAddress2,
-				Amount:    math.NewInt(1e18), // 1 VITA
+				Amount:    math.NewInt(1000000), // 1 VITA
 				Memo:      "Test payment",
 			},
 			expectError: false,
@@ -194,7 +194,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    invalidAddress,
 				MerchantAddress: validAddress2,
-				Amount:    math.NewInt(1e18),
+				Amount:    math.NewInt(1000000),
 				Memo:      "Test payment",
 			},
 			expectError: true,
@@ -204,7 +204,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: invalidAddress,
-				Amount:    math.NewInt(1e18),
+				Amount:    math.NewInt(1000000),
 				Memo:      "Test payment",
 			},
 			expectError: true,
@@ -214,7 +214,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: validAddress1,
-				Amount:    math.NewInt(1e18),
+				Amount:    math.NewInt(1000000),
 				Memo:      "Test payment",
 			},
 			expectError: true,
@@ -234,7 +234,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: validAddress2,
-				Amount:    math.NewInt(1e11), // Below minimum
+				Amount:    math.NewInt(999), // Below MinPaymentAmount (1000)
 				Memo:      "Test payment",
 			},
 			expectError: true,
@@ -254,7 +254,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: validAddress2,
-				Amount:    math.NewInt(1e18),
+				Amount:    math.NewInt(1000000),
 				Memo:      string(make([]byte, 257)), // 257 characters
 			},
 			expectError: true,
@@ -264,7 +264,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: validAddress2,
-				Amount:    math.NewInt(1e18),
+				Amount:    math.NewInt(1000000),
 				Memo:      "Invalid\x00memo",
 			},
 			expectError: true,
@@ -274,7 +274,7 @@ func TestMsgCreatePayment_ValidateBasic(t *testing.T) {
 			msg: types.MsgCreatePayment{
 				Sender:    validAddress1,
 				MerchantAddress: validAddress2,
-				Amount:    math.NewInt(1e18),
+				Amount:    math.NewInt(1000000),
 				Memo:      "Valid\t\n\rmemo",
 			},
 			expectError: false,
@@ -303,7 +303,7 @@ func TestMsgCreateVault_ValidateBasic(t *testing.T) {
 			name: "valid message",
 			msg: types.MsgCreateVault{
 				Sender:        validAddress1,
-				Amount:       math.NewInt(1e18), // 1 VITA
+				Amount:       math.NewInt(1000000), // 1 VITA
 				LockDuration: 1000,
 			},
 			expectError: false,
@@ -312,7 +312,7 @@ func TestMsgCreateVault_ValidateBasic(t *testing.T) {
 			name: "invalid owner address",
 			msg: types.MsgCreateVault{
 				Sender:        invalidAddress,
-				Amount:       math.NewInt(1e18),
+				Amount:       math.NewInt(1000000),
 				LockDuration: 1000,
 			},
 			expectError: true,
@@ -348,7 +348,7 @@ func TestMsgCreateVault_ValidateBasic(t *testing.T) {
 			name: "zero unlock height",
 			msg: types.MsgCreateVault{
 				Sender:        validAddress1,
-				Amount:       math.NewInt(1e18),
+				Amount:       math.NewInt(1000000),
 				LockDuration: 0,
 			},
 			expectError: true,
@@ -357,7 +357,7 @@ func TestMsgCreateVault_ValidateBasic(t *testing.T) {
 			name: "unlock height too far in future",
 			msg: types.MsgCreateVault{
 				Sender:        validAddress1,
-				Amount:       math.NewInt(1e18),
+				Amount:       math.NewInt(1000000),
 				LockDuration: 100000001, // Beyond max
 			},
 			expectError: true,
@@ -386,7 +386,7 @@ func TestMsgCreateRewardPool_ValidateBasic(t *testing.T) {
 			name: "valid message with duration",
 			msg: types.MsgCreateRewardPool{
 				Sender:         validAddress1,
-				TotalRewards:   math.NewInt(1000000000000000), // 1e15 (0.001 VITA minimum)
+				TotalRewards:   math.NewInt(1000000), // 1e15 (0.001 VITA minimum)
 				DurationBlocks: 1000,
 			},
 			expectError: false,
@@ -395,7 +395,7 @@ func TestMsgCreateRewardPool_ValidateBasic(t *testing.T) {
 			name: "valid message unlimited pool",
 			msg: types.MsgCreateRewardPool{
 				Sender:         validAddress1,
-				TotalRewards:   math.NewInt(1000000000000000), // 1e15 (0.001 VITA minimum)
+				TotalRewards:   math.NewInt(1000000), // 1e15 (0.001 VITA minimum)
 				DurationBlocks: 0, // Unlimited
 			},
 			expectError: false,
@@ -465,7 +465,7 @@ func TestEntityStringMethods(t *testing.T) {
 		Address:            validAddress1,
 		BusinessName:       "Test Business",
 		Tier:               types.MerchantTierGold,
-		StakeAmount:        math.NewInt(1e18),
+		StakeAmount:        math.NewInt(1000000),
 		RegistrationHeight: 100,
 		IsActive:           true,
 		TotalVolume:        math.NewInt(5e18),
@@ -480,7 +480,7 @@ func TestEntityStringMethods(t *testing.T) {
 		Id:               "payment-123",
 		FromAddress:      validAddress1,
 		ToAddress:        validAddress2,
-		Amount:           math.NewInt(1e18),
+		Amount:           math.NewInt(1000000),
 		Status:           types.PaymentStatusCompleted,
 		CreationHeight:   100,
 		CompletionHeight: 150,
@@ -495,7 +495,7 @@ func TestEntityStringMethods(t *testing.T) {
 	vault := types.Vault{
 		Id:               "vault-123",
 		Owner:            validAddress1,
-		Amount:           math.NewInt(1e18),
+		Amount:           math.NewInt(1000000),
 		LockDuration:     1000,
 		CreationHeight:   100,
 		UnlockHeight:     1100,
@@ -510,7 +510,7 @@ func TestEntityStringMethods(t *testing.T) {
 	pool := types.RewardPool{
 		Id:                 "pool-123",
 		MerchantAddress:    validAddress1,
-		TotalRewards:       math.NewInt(1e18),
+		TotalRewards:       math.NewInt(1000000),
 		DistributedRewards: math.NewInt(5e17), // 50% distributed
 		StartHeight:        100,
 		EndHeight:          1000,
@@ -527,7 +527,7 @@ func TestMsgStringMethods(t *testing.T) {
 	msg := &types.MsgRegisterMerchant{
 		Sender:       validAddress1,
 		BusinessName: "Test Business",
-		StakeAmount:  math.NewInt(1e18),
+		StakeAmount:  math.NewInt(1000000),
 	}
 	msgStr := msg.String()
 	require.Contains(t, msgStr, "sender")
@@ -538,7 +538,7 @@ func TestMsgStringMethods(t *testing.T) {
 	paymentMsg := &types.MsgCreatePayment{
 		Sender:    validAddress1,
 		MerchantAddress: validAddress2,
-		Amount:    math.NewInt(1e18),
+		Amount:    math.NewInt(1000000),
 		Memo:      "Test payment",
 	}
 	paymentMsgStr := paymentMsg.String()
