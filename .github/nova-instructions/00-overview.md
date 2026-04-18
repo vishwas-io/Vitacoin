@@ -1,5 +1,15 @@
 # Overview — VitaCoin Engineering Mindset
 
+## Zero Hallucination Rule (Read First)
+
+Before writing any code:
+1. Verify every function/method exists — `grep -n "func.*Name" <file>`
+2. Check Context7 for any third-party library — never use training memory alone
+3. Read the file before editing it
+4. Run the test/build before reporting done — never say "should work"
+
+Full protocol: `06-anti-hallucination.md`
+
 ## The Mission
 
 VitaCoin is not a side project. It is a **payment-first blockchain** with a target valuation of $1M+, aiming for mainnet August 2026, exchange listings, and real merchant adoption across India and emerging markets.
