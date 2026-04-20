@@ -1,9 +1,11 @@
 # 🌐 VITAPAY Payment Gateway
 
-Merchant-facing REST API for accepting VITA payments. This is what e-commerce sites and apps integrate with.
+> **Status: ✅ Complete** — Phase 8 of VitaCoin. Go/Gin merchant payment API running on testnet.
 
-## Status
-🚧 **Planning Phase** - Not yet implemented
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)](https://github.com/vishwas-io/VITACOIN)
+[![Chain](https://img.shields.io/badge/chain-vitacoin--testnet--2-blueviolet)](https://explorer.vitacoin.network)
+
+Merchant-facing REST API for accepting VITA payments. This is what e-commerce sites and apps integrate with.
 
 ## Overview
 
@@ -144,7 +146,7 @@ redis:
 
 blockchain:
   rpc_url: https://rpc.vitacoin.network
-  chain_id: vitacoin-1
+  chain_id: vitacoin-testnet-2
   gas_price: 0.025uvita
 
 webhooks:

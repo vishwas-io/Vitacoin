@@ -1,9 +1,11 @@
 # 📱 VITAPAY Mobile Wallet
 
-Customer-facing mobile app for iOS and Android. This is what users install to send and receive VITA payments.
+> **Status: ✅ Complete** — Phase 7 of VitaCoin. React Native wallet running on testnet.
 
-## Status
-🚧 **Planning Phase** - Not yet implemented
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)](https://github.com/vishwas-io/VITACOIN)
+[![Chain](https://img.shields.io/badge/chain-vitacoin--testnet--2-blueviolet)](https://explorer.vitacoin.network)
+
+Customer-facing mobile app for iOS and Android. This is what users install to send and receive VITA payments.
 
 ## Overview
 
@@ -131,7 +133,7 @@ npx react-native run-android
 Create a `.env` file:
 ```bash
 VITACOIN_RPC_URL=https://rpc.vitacoin.network
-VITACOIN_CHAIN_ID=vitacoin-1
+VITACOIN_CHAIN_ID=vitacoin-testnet-2
 API_BASE_URL=https://api.vitapay.network
 ```
 
@@ -297,11 +299,11 @@ POST /api/v1/devices
 ## Roadmap
 
 ### Phase 1: MVP (Q2 2026)
-- [ ] Wallet creation/import
-- [ ] Send/receive VITA
-- [ ] QR code scanning
-- [ ] Transaction history
-- [ ] Biometric auth
+- [x] Wallet creation/import
+- [x] Send/receive VITA
+- [x] QR code scanning
+- [x] Transaction history
+- [x] Biometric auth
 
 ### Phase 2: Enhanced (Q3 2026)
 - [ ] Contact management

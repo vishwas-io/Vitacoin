@@ -1,5 +1,10 @@
 # VITAPAY Gateway
 
+> **Status: ✅ Complete** — Phase 8 of VitaCoin. Production-ready Go/Gin payment gateway for the VitaCoin blockchain.
+
+[![Status](https://img.shields.io/badge/status-complete-brightgreen)](https://github.com/vishwas-io/VITACOIN)
+[![Chain](https://img.shields.io/badge/chain-vitacoin--testnet--2-blueviolet)](https://explorer.vitacoin.network)
+
 The VITAPAY Gateway is the Go/Gin HTTP service that bridges merchants and the VitaCoin blockchain. It handles payment creation, QR/deep-link generation, on-chain confirmation, webhook delivery, and merchant management.
 
 ---
@@ -24,7 +29,7 @@ Merchant App ──► VITAPAY Gateway (Go/Gin) ──► VitaCoin Chain (REST)
 
 #### `GET /api/v1/health`
 ```json
-{ "status": "ok", "chain": "vitacoin-1", "version": "1.0.0" }
+{ "status": "ok", "chain": "vitacoin-testnet-2", "version": "1.0.0" }
 ```
 
 ---
@@ -136,7 +141,7 @@ Webhook POSTs (on confirmation):
 export PORT=8080
 export VITAPAY_JWT_SECRET=your-secret-here
 export VITACOIN_REST=https://api.vitacoin.network
-export CHAIN_ID=vitacoin-1
+export CHAIN_ID=vitacoin-testnet-2
 
 go run main.go
 ```
@@ -176,7 +181,7 @@ gcloud run deploy vitapay-gateway \
 | `VITAPAY_JWT_SECRET` | *(required)* | JWT signing secret |
 | `VITACOIN_REST` | `https://api.vitacoin.network` | Chain REST endpoint |
 | `VITACOIN_RPC` | `https://rpc.vitacoin.network` | Chain RPC endpoint |
-| `CHAIN_ID` | `vitacoin-1` | Chain ID |
+| `CHAIN_ID` | `vitacoin-testnet-2` | Chain ID |
 | `MODULE_ADDRESS` | *(optional)* | Gateway module account |
 | `DATABASE_URL` | *(optional)* | Supabase postgres (enables persistence) |
 

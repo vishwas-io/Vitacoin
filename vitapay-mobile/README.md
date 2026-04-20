@@ -141,7 +141,7 @@ Edit `src/constants/config.ts`:
 
 | Key | Value |
 |---|---|
-| `CHAIN_ID` | `vitacoin-1` |
+| `CHAIN_ID` | `vitacoin-testnet-2` |
 | `RPC_ENDPOINT` | `https://rpc.vitacoin.network` |
 | `REST_ENDPOINT` | `https://api.vitacoin.network` |
 | `DENOM` | `uvita` (micro-VITA, 6 decimals) |
@@ -162,4 +162,4 @@ Edit `src/constants/config.ts`:
 
 Phase 7 of VitaCoin (VITAPAY Mobile Wallet) — **Complete** ✅
 
-Next: Phase 8 — VITAPAY Payment Gateway (Go/Gin merchant API)
+All 9 phases of VitaCoin are now complete. Testnet is LIVE: chain-id `vitacoin-testnet-2`.
