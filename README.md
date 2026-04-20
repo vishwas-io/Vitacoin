@@ -99,7 +99,7 @@ Phase 9: Mainnet Prep & Docs       ███████████████
 ### Technical Metrics
 
 | Metric | Value |
-|---|---|
+|:---|:---|
 | Blockchain LOC | 35,929+ |
 | Mobile Wallet LOC | 1,665 |
 | Payment Gateway LOC | 1,214 |
@@ -147,7 +147,7 @@ vitacoin/ (monorepo)
 ## 🪙 VITACOIN — Cryptocurrency
 
 | Property | Value |
-|---|---|
+|:---|:---|
 | Ticker | VITA |
 | Base Denom | uvita (1 VITA = 1,000,000 uvita) |
 | Total Supply | 1,000,000,000 VITA |
@@ -166,7 +166,7 @@ vitacoin/ (monorepo)
 ### Tokenomics
 
 | Allocation | % | Amount |
-|---|---|---|
+|:---|:---|:---|
 | Community & Ecosystem | 40% | 400M VITA |
 | Team & Advisors (4yr vesting) | 20% | 200M VITA |
 | Treasury | 15% | 150M VITA |
@@ -294,29 +294,29 @@ Join the community: [discord.gg/9JsRPwDzg](https://discord.gg/9JsRPwDzg)
 
 ## 🛣️ Roadmap
 
-| Phase | Status | Date |
-|---|---|---|
-| Phase 1: Foundation | ✅ Complete | Oct 2025 |
-| Phase 2: Custom Module | ✅ Complete | Oct 2025 |
-| Phase 3: Fee System & Treasury | ✅ Complete | Apr 5, 2026 |
-| Phase 4: Staking System | ✅ Complete | Apr 6, 2026 |
-| Phase 5: Governance | ✅ Complete | Apr 6, 2026 |
-| Phase 6: IBC Integration | ✅ Complete | Apr 7, 2026 |
-| Phase 7: VITAPAY Mobile Wallet | ✅ Complete | Apr 7, 2026 |
-| Phase 8: VITAPAY Payment Gateway | ✅ Complete | Apr 7, 2026 |
-| Phase 9: Mainnet Prep Docs | ✅ Complete | Apr 7, 2026 |
-| **Public Testnet Launch** | ✅ **Live — April 15, 2026** | |
-| External Security Audit | 📋 Planned | May–Jun 2026 |
-| Exchange Listings (Osmosis, Gate.io) | 📋 Planned | Jun–Jul 2026 |
-| VITAPAY Beta (100 merchants) | 📋 Planned | Jul 2026 |
-| **Mainnet Launch** | 🎯 **August 2026** | |
+| Phase                                 | Status                          | Date             |
+|:--------------------------------------|:--------------------------------|:-----------------|
+| Phase 1: Foundation                   | ✅ Complete                     | Oct 2025         |
+| Phase 2: Custom Module                | ✅ Complete                     | Oct 2025         |
+| Phase 3: Fee System & Treasury        | ✅ Complete                     | Apr 5, 2026      |
+| Phase 4: Staking System               | ✅ Complete                     | Apr 6, 2026      |
+| Phase 5: Governance                   | ✅ Complete                     | Apr 6, 2026      |
+| Phase 6: IBC Integration              | ✅ Complete                     | Apr 7, 2026      |
+| Phase 7: VITAPAY Mobile Wallet        | ✅ Complete                     | Apr 7, 2026      |
+| Phase 8: VITAPAY Payment Gateway      | ✅ Complete                     | Apr 7, 2026      |
+| Phase 9: Mainnet Prep & Docs          | ✅ Complete                     | Apr 7, 2026      |
+| **Public Testnet Launch**             | ✅ **Live**                     | **Apr 15, 2026** |
+| External Security Audit               | 📋 Planned                     | May–Jun 2026     |
+| Exchange Listings (Osmosis, Gate.io)   | 📋 Planned                     | Jun–Jul 2026     |
+| VITAPAY Beta (100 merchants)           | 📋 Planned                     | Jul 2026         |
+| **Mainnet Launch**                    | 🎯 **Target**                  | **Aug 2026**     |
 
 ---
 
 ## 📖 Documentation
 
 | Doc | Description |
-|---|---|
+|:---|:---|
 | [docs/mainnet-launch.md](vitacoin/docs/mainnet-launch.md) | Mainnet launch guide |
 | [docs/tokenomics.md](vitacoin/docs/tokenomics.md) | Full tokenomics spec |
 | [docs/exchange-listing.md](vitacoin/docs/exchange-listing.md) | Exchange listing checklist |
