@@ -2,7 +2,7 @@
 
 # ⛓️ VITA Blockchain
 
-<img src="https://img.shields.io/badge/status-testnet%20LIVE-brightgreen-brightgreen?style=for-the-badge" alt="Status"/>
+<img src="https://img.shields.io/badge/status-testnet%20LIVE-brightgreen?style=for-the-badge" alt="Status"/>
 <img src="https://img.shields.io/badge/phases-9%2F9%20complete-success?style=for-the-badge" alt="Phase"/>
 <img src="https://img.shields.io/badge/mainnet-August%202026-blue?style=for-the-badge" alt="Mainnet"/>
 <img src="https://img.shields.io/badge/tests-97%20passing-success?style=for-the-badge" alt="Tests"/>
@@ -15,6 +15,18 @@
 [![Go Version](https://img.shields.io/badge/go-1.21.13-00ADD8.svg?logo=go)](https://golang.org)
 [![Cosmos SDK](https://img.shields.io/badge/cosmos--sdk-v0.50.15-5064EA.svg)](https://github.com/cosmos/cosmos-sdk)
 [![CometBFT](https://img.shields.io/badge/cometbft-v0.38-red.svg)](https://github.com/cometbft/cometbft)
+[![Coverage](https://img.shields.io/badge/coverage-70.1%25-green.svg)](https://github.com/vishwas-io/VITACOIN)
+[![LOC](https://img.shields.io/badge/LOC-35%2C929%2B-blueviolet.svg)](https://github.com/vishwas-io/VITACOIN)
+
+[![GitHub Stars](https://img.shields.io/github/stars/vishwas-io/VITACOIN?style=social)](https://github.com/vishwas-io/VITACOIN/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/vishwas-io/VITACOIN?style=social)](https://github.com/vishwas-io/VITACOIN/network/members)
+[![GitHub Watchers](https://img.shields.io/github/watchers/vishwas-io/VITACOIN?style=social)](https://github.com/vishwas-io/VITACOIN/watchers)
+[![GitHub Release](https://img.shields.io/github/v/release/vishwas-io/VITACOIN?include_prereleases&label=release)](https://github.com/vishwas-io/VITACOIN/releases)
+[![GitHub Issues](https://img.shields.io/github/issues/vishwas-io/VITACOIN)](https://github.com/vishwas-io/VITACOIN/issues)
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/9JsRPwDzg)
+[![Website](https://img.shields.io/badge/Website-vitacoin.network-f59e0b?style=for-the-badge&logo=google-chrome&logoColor=white)](https://vitacoin.network)
+[![Explorer](https://img.shields.io/badge/Explorer-Live-22c55e?style=for-the-badge&logo=ethereum&logoColor=white)](https://explorer.vitacoin.network)
 
 [🚀 Quick Start](#-quick-start) •
 [📖 Documentation](#-documentation) •
