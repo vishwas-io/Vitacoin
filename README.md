@@ -2,10 +2,10 @@
 
 # ⛓️ VITA Blockchain
 
-<img src="https://img.shields.io/badge/status-testnet%20launching%20Apr%2015-brightgreen?style=for-the-badge" alt="Status"/>
+<img src="https://img.shields.io/badge/status-testnet%20LIVE-brightgreen-brightgreen?style=for-the-badge" alt="Status"/>
 <img src="https://img.shields.io/badge/phases-9%2F9%20complete-success?style=for-the-badge" alt="Phase"/>
 <img src="https://img.shields.io/badge/mainnet-August%202026-blue?style=for-the-badge" alt="Mainnet"/>
-<img src="https://img.shields.io/badge/tests-21%20passing-success?style=for-the-badge" alt="Tests"/>
+<img src="https://img.shields.io/badge/tests-97%20passing-success?style=for-the-badge" alt="Tests"/>
 
 **Next-Generation Blockchain Payment Infrastructure**
 
@@ -13,7 +13,7 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.21.13-00ADD8.svg?logo=go)](https://golang.org)
-[![Cosmos SDK](https://img.shields.io/badge/cosmos--sdk-v0.50.3-5064EA.svg)](https://github.com/cosmos/cosmos-sdk)
+[![Cosmos SDK](https://img.shields.io/badge/cosmos--sdk-v0.50.15-5064EA.svg)](https://github.com/cosmos/cosmos-sdk)
 [![CometBFT](https://img.shields.io/badge/cometbft-v0.38-red.svg)](https://github.com/cometbft/cometbft)
 
 [🚀 Quick Start](#-quick-start) •
@@ -40,9 +40,9 @@
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ⛓️  LAYER 1: VITA Blockchain Platform                      │
-│  ├─ Custom Cosmos SDK v0.50.3 blockchain                   │
+│  ├─ Custom Cosmos SDK v0.50.15 blockchain                   │
 │  ├─ CometBFT Proof-of-Stake consensus                      │
-│  ├─ 35,929+ LOC, 52%+ test coverage                       │
+│  ├─ 35,929+ LOC, 70%+ test coverage                       │
 │  ├─ 5-second block time, instant finality                  │
 │  └─ IBC-enabled for cross-chain communication              │
 │        │                                                     │
@@ -50,7 +50,7 @@
 │        │   ├─ Native cryptocurrency on VITA Blockchain     │
 │        │   ├─ 1 Billion VITA total supply                  │
 │        │   ├─ 0.1% protocol fee per transaction            │
-│        │   ├─ Fee distribution: 50% validators, 25% burn, 25% treasury
+│        │   ├─ Fee distribution: 40% burn, 40% validators, 20% treasury
 │        │   ├─ Merchant tier system with fee discounts      │
 │        │   └─ Deflationary tokenomics with burn cap        │
 │        │                                                     │
@@ -82,18 +82,18 @@ Phase 8: VITAPAY Payment Gateway   ███████████████
 Phase 9: Mainnet Prep & Docs       ████████████████████ 100% ✅
 ```
 
-**ALL CODE PHASES COMPLETE. Public testnet launches April 15, 2026.**
+**ALL CODE PHASES COMPLETE. Public testnet is LIVE with 3 validators.**
 
 ### Technical Metrics
 
 | Metric | Value |
 |---|---|
-| Blockchain LOC | 33,050 |
+| Blockchain LOC | 35,929+ |
 | Mobile Wallet LOC | 1,665 |
 | Payment Gateway LOC | 1,214 |
 | **Total LOC** | **~35,929** |
-| Keeper Tests Passing | 21 |
-| Test Coverage | 52.1% |
+| Keeper Tests Passing | 97 |
+| Test Coverage | 70.1% |
 | Keeper Functions | 80+ |
 | gRPC Endpoints | 20+ |
 | Total Commits | 28+ |
@@ -104,7 +104,7 @@ Phase 9: Mainnet Prep & Docs       ███████████████
 
 ```
 vitacoin/ (monorepo)
-├── vitacoin/                    ← Blockchain (Go + Cosmos SDK v0.50.3)
+├── vitacoin/                    ← Blockchain (Go + Cosmos SDK v0.50.15)
 │   ├── x/vitacoin/              ← Custom module
 │   │   ├── keeper/              ← 80+ keeper functions
 │   │   │   ├── keeper.go        ← Core + merchant registry
@@ -116,7 +116,7 @@ vitacoin/ (monorepo)
 │   │   │   └── ibc.go           ← Cross-chain VITA transfers
 │   │   ├── types/               ← All types, params, messages
 │   │   └── module.go            ← Module wiring + EndBlocker
-│   ├── app/                     ← App wiring (Cosmos SDK v0.50.3)
+│   ├── app/                     ← App wiring (Cosmos SDK v0.50.15)
 │   └── cmd/vitacoind/           ← Node daemon CLI
 ├── vitapay-mobile/              ← React Native / Expo mobile wallet
 │   └── src/
@@ -140,7 +140,7 @@ vitacoin/ (monorepo)
 | Base Denom | uvita (1 VITA = 1,000,000 uvita) |
 | Total Supply | 1,000,000,000 VITA |
 | Protocol Fee | 0.1% per transaction |
-| Fee Split | 50% validators / 25% burn / 25% treasury |
+| Fee Split | 40% burn / 40% validators / 20% treasury |
 | Consensus | CometBFT Proof-of-Stake |
 | Block Time | ~5 seconds |
 | Unbonding Period | 21 days |
@@ -229,7 +229,7 @@ make build
 ```bash
 cd vitacoin
 go test -timeout 120s ./x/vitacoin/keeper/
-# Expected: 21 tests, PASS, coverage: 52.1%
+# Expected: 97 tests, PASS, coverage: 70.1%
 ```
 
 ### Initialize a Local Testnet Node
@@ -260,6 +260,22 @@ RPC:       https://rpc.vitacoin.network
 REST:      https://api.vitacoin.network
 Explorer:  https://explorer.vitacoin.network
 Faucet:    https://faucet.vitacoin.network
+
+### One-Line Setup (Linux)
+
+```bash
+curl -s https://vitacoin.network/setup.sh | bash
+```
+
+Downloads binary, genesis, configures peers, creates systemd service. No Go required.
+
+### Validator Guide
+
+See [docs/VALIDATOR_GUIDE.md](docs/VALIDATOR_GUIDE.md) for full validator setup instructions.
+
+### Discord
+
+Join the community: [discord.gg/9JsRPwDzg](https://discord.gg/9JsRPwDzg)
 ```
 
 ---
@@ -277,7 +293,7 @@ Faucet:    https://faucet.vitacoin.network
 | Phase 7: VITAPAY Mobile Wallet | ✅ Complete | Apr 7, 2026 |
 | Phase 8: VITAPAY Payment Gateway | ✅ Complete | Apr 7, 2026 |
 | Phase 9: Mainnet Prep Docs | ✅ Complete | Apr 7, 2026 |
-| **Public Testnet Launch** | 🔜 **April 15, 2026** | |
+| **Public Testnet Launch** | ✅ **Live — April 15, 2026** | |
 | External Security Audit | 📋 Planned | May–Jun 2026 |
 | Exchange Listings (Osmosis, Gate.io) | 📋 Planned | Jun–Jul 2026 |
 | VITAPAY Beta (100 merchants) | 📋 Planned | Jul 2026 |
@@ -314,7 +330,7 @@ Pre-mainnet external audit planned with Halborn / Trail of Bits / OtterSec.
 
 ## 🤝 Contributing
 
-VitaCoin is currently in pre-mainnet development. Testnet validator applications will open April 15, 2026.
+VitaCoin is currently in pre-mainnet development. Testnet is live! Join as a validator:
 
 - **Validator interest:** Open an issue with your organization name and infrastructure details
 - **Bug reports:** Open a GitHub issue
@@ -330,8 +346,8 @@ Apache 2.0 — see [LICENSE](LICENSE)
 
 <div align="center">
 
-**Built with ⚡ by the VitaCoin team**
+**Built with ⚡ by Vishwas Verma**
 
-[vitacoin.network](https://vitacoin.network) • [Telegram](https://t.me/vitacoinnetwork) • [GitHub](https://github.com/esspron/VITACOIN)
+[vitacoin.network](https://vitacoin.network) • [Discord](https://discord.gg/9JsRPwDzg) • [GitHub](https://github.com/esspron/VITACOIN)
 
 </div>
