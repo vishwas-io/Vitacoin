@@ -1,7 +1,7 @@
 export const CONFIG = {
   CHAIN_ID: 'vitacoin-testnet-2',
-  RPC_ENDPOINT: 'http://rpc.vitacoin.network',
-  REST_ENDPOINT: 'http://api.vitacoin.network',
+  RPC_ENDPOINT: 'https://rpc.vitacoin.network',
+  REST_ENDPOINT: 'https://api.vitacoin.network',
   DENOM: 'uvita',
   DISPLAY_DENOM: 'VITA',
   DENOM_DECIMALS: 6,
