@@ -25,8 +25,8 @@ export function parsePaymentQR(qrData: string): PaymentRequest | null {
 
     if (!to || !amount) return null;
 
-    // Validate address format (basic check: must start with vita1)
-    if (!to.startsWith('vita1')) return null;
+    // Validate address format (basic check: must start with cosmos1)
+    if (!to.startsWith('cosmos1')) return null;
 
     // Validate amount
     const parsedAmount = parseFloat(amount);
@@ -79,7 +79,7 @@ export async function executePayment(
   }
 
   // Validate: valid address
-  if (!request.merchantAddress || !request.merchantAddress.startsWith('vita1')) {
+  if (!request.merchantAddress || !request.merchantAddress.startsWith('cosmos1')) {
     throw new Error('Invalid merchant address');
   }
 
