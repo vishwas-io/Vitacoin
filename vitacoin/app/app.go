@@ -137,6 +137,12 @@ var (
 )
 
 func init() {
+	// Set bech32 prefix to "vita" before anything else
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("vita", "vitapub")
+	config.SetBech32PrefixForValidator("vitavaloper", "vitavaloperpub")
+	config.SetBech32PrefixForConsensusNode("vitavalcons", "vitavalconspub")
+
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -196,8 +202,8 @@ func NewVitacoinApp(
 	interfaceRegistry, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
 		ProtoFiles: gogoproto.HybridResolver,
 		SigningOptions: txsigning.Options{
-			AddressCodec:          authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
-			ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+			AddressCodec:          authcodec.NewBech32Codec("vita"),
+			ValidatorAddressCodec: authcodec.NewBech32Codec("vitavaloper"),
 		},
 	})
 	if err != nil {
@@ -254,8 +260,8 @@ func NewVitacoinApp(
 		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
-		sdk.Bech32MainPrefix,
+		authcodec.NewBech32Codec("vita"),
+		"vita",
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -274,8 +280,8 @@ func NewVitacoinApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
-		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+		authcodec.NewBech32Codec("vitavaloper"),
+		authcodec.NewBech32Codec("vitavalcons"),
 	)
 
 	app.MintKeeper = mintkeeper.NewKeeper(

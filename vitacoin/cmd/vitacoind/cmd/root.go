@@ -122,6 +122,9 @@ func initAppConfig() (string, interface{}) {
 
 func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager module.BasicManager) {
 	cfg := sdk.GetConfig()
+	cfg.SetBech32PrefixForAccount("vita", "vitapub")
+	cfg.SetBech32PrefixForValidator("vitavaloper", "vitavaloperpub")
+	cfg.SetBech32PrefixForConsensusNode("vitavalcons", "vitavalconspub")
 	cfg.Seal()
 
 	rootCmd.AddCommand(
@@ -178,8 +181,8 @@ func queryCommand(basicManager module.BasicManager) *cobra.Command {
 }
 
 func txCommand(basicManager module.BasicManager) *cobra.Command {
-	ac := authcodec.NewBech32Codec(sdk.Bech32MainPrefix)
-	vc := authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr)
+	ac := authcodec.NewBech32Codec("vita")
+	vc := authcodec.NewBech32Codec("vitavaloper")
 
 	cmd := &cobra.Command{
 		Use:                        "tx",
