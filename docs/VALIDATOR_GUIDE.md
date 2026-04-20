@@ -1,6 +1,6 @@
 # VitaCoin Testnet — Validator Onboarding Guide
 
-**Chain ID:** `vitacoin-testnet-1`  
+**Chain ID:** `vitacoin-testnet-2`  
 **Bond denom:** `uvita` (1 VITA = 1,000,000 uvita)  
 **Minimum self-delegation:** 10,000 VITA (10,000,000,000 uvita)
 
@@ -59,10 +59,10 @@ vitacoind version
 
 ```bash
 # Replace <moniker> with your validator name
-vitacoind init <moniker> --chain-id vitacoin-testnet-1
+vitacoind init <moniker> --chain-id vitacoin-testnet-2
 
 # Example:
-vitacoind init my-validator --chain-id vitacoin-testnet-1
+vitacoind init my-validator --chain-id vitacoin-testnet-2
 ```
 
 This creates `~/.vitacoind/` with `config/` and `data/` directories.
@@ -72,13 +72,13 @@ This creates `~/.vitacoind/` with `config/` and `data/` directories.
 ## 4. Download Genesis
 
 ```bash
-curl -s http://rpc.vitacoin.network/genesis \
+curl -s https://rpc.vitacoin.network/genesis \
   | jq '.result.genesis' \
   > ~/.vitacoind/config/genesis.json
 
 # Verify chain ID
 jq '.chain_id' ~/.vitacoind/config/genesis.json
-# Expected: "vitacoin-testnet-1"
+# Expected: "vitacoin-testnet-2"
 ```
 
 ---
@@ -196,7 +196,7 @@ curl -X POST http://34.93.188.116:8889/faucet \
 
 ### Verify balance
 ```bash
-vitacoind query bank balances $ADDR --node http://rpc.vitacoin.network:26657
+vitacoind query bank balances $ADDR --node https://rpc.vitacoin.network:26657
 ```
 
 You need at least **10,000,000,000 uvita** (10,000 VITA) to create a validator.
@@ -216,7 +216,7 @@ vitacoind tx staking create-validator \
   --from <wallet-name> \
   --pubkey "$PUBKEY" \
   --moniker "<your-moniker>" \
-  --chain-id vitacoin-testnet-1 \
+  --chain-id vitacoin-testnet-2 \
   --commission-rate 0.05 \
   --commission-max-rate 0.20 \
   --commission-max-change-rate 0.01 \
@@ -224,7 +224,7 @@ vitacoind tx staking create-validator \
   --gas auto \
   --gas-adjustment 1.4 \
   --fees 5000uvita \
-  --node http://rpc.vitacoin.network:26657 \
+  --node https://rpc.vitacoin.network:26657 \
   --broadcast-mode sync \
   -y
 ```
@@ -248,13 +248,13 @@ Open: [http://explorer.vitacoin.network](http://explorer.vitacoin.network)
 You can also query via CLI:
 ```bash
 vitacoind query staking validator <cosmosvaloper1...> \
-  --node http://rpc.vitacoin.network:26657
+  --node https://rpc.vitacoin.network:26657
 ```
 
 Or check all validators:
 ```bash
 vitacoind query staking validators \
-  --node http://rpc.vitacoin.network:26657 \
+  --node https://rpc.vitacoin.network:26657 \
   | jq '.validators[] | {moniker: .description.moniker, status: .status, tokens: .tokens}'
 ```
 
@@ -278,18 +278,18 @@ grep persistent_peers ~/.vitacoind/config/config.toml
 ### Wrong genesis file
 ```bash
 # Re-download genesis
-curl -s http://rpc.vitacoin.network/genesis \
+curl -s https://rpc.vitacoin.network/genesis \
   | jq '.result.genesis' \
   > ~/.vitacoind/config/genesis.json
 
 # Check hash matches network
-curl -s http://rpc.vitacoin.network/genesis | jq '.result.genesis' | sha256sum
+curl -s https://rpc.vitacoin.network/genesis | jq '.result.genesis' | sha256sum
 ```
 
 ### Validator not in active set
 The testnet may have a limited validator set size. Check:
 ```bash
-vitacoind query staking params --node http://rpc.vitacoin.network:26657 \
+vitacoind query staking params --node https://rpc.vitacoin.network:26657 \
   | jq '.max_validators'
 ```
 
@@ -322,14 +322,14 @@ The faucet is rate-limited. Wait ~60 seconds and retry. Each request drips a fix
 
 | Service | URL |
 |---------|-----|
-| RPC | http://rpc.vitacoin.network:26657 |
-| REST API | http://api.vitacoin.network:1317 |
+| RPC | https://rpc.vitacoin.network:26657 |
+| REST API | https://api.vitacoin.network:1317 |
 | Explorer | http://explorer.vitacoin.network |
 | Faucet | http://34.93.188.116:8889 |
 
 ### Swagger / API docs
 ```
-http://api.vitacoin.network:1317/swagger/
+https://api.vitacoin.network:1317/swagger/
 ```
 
 ---

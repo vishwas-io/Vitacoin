@@ -236,7 +236,7 @@ go test -timeout 120s ./x/vitacoin/keeper/
 
 ```bash
 # Init chain
-./build/vitacoind init my-node --chain-id vitacoin-testnet-1
+./build/vitacoind init my-node --chain-id vitacoin-testnet-2
 
 # Add test key
 ./build/vitacoind keys add validator --keyring-backend test
@@ -245,7 +245,7 @@ go test -timeout 120s ./x/vitacoin/keeper/
 ./build/vitacoind genesis add-genesis-account $(./build/vitacoind keys show validator -a --keyring-backend test) 1000000000uvita,1000000stake
 
 # Create genesis validator
-./build/vitacoind genesis gentx validator 1000000stake --chain-id vitacoin-testnet-1 --keyring-backend test
+./build/vitacoind genesis gentx validator 1000000stake --chain-id vitacoin-testnet-2 --keyring-backend test
 ./build/vitacoind genesis collect-gentxs
 
 # Start node
@@ -255,7 +255,7 @@ go test -timeout 120s ./x/vitacoin/keeper/
 ### Connect to Public Testnet (Live April 15, 2026)
 
 ```
-Chain ID:  vitacoin-testnet-1
+Chain ID:  vitacoin-testnet-2
 RPC:       https://rpc.vitacoin.network
 REST:      https://api.vitacoin.network
 Explorer:  https://explorer.vitacoin.network
