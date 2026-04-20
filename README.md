@@ -216,7 +216,7 @@ vitacoin/ (monorepo)
 ### Build
 
 ```bash
-git clone https://github.com/esspron/VITACOIN
+git clone https://github.com/vishwas-io/VITACOIN
 cd VITACOIN/vitacoin
 
 export PATH=$PATH:/usr/local/go/bin
@@ -348,6 +348,6 @@ Apache 2.0 — see [LICENSE](LICENSE)
 
 **Built with ⚡ by Vishwas Verma**
 
-[vitacoin.network](https://vitacoin.network) • [Discord](https://discord.gg/9JsRPwDzg) • [GitHub](https://github.com/esspron/VITACOIN)
+[vitacoin.network](https://vitacoin.network) • [Discord](https://discord.gg/9JsRPwDzg) • [GitHub](https://github.com/vishwas-io/VITACOIN)
 
 </div>

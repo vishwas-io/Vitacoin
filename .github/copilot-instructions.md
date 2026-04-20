@@ -1267,7 +1267,7 @@ Future (VITAPAY):
 **VITACOIN Status**: Phase 2 at 98% complete, Phase 3 at 60% complete  
 **Next Milestone**: Complete Phase 3 (Fee System & Treasury)  
 **Target Mainnet**: August 2026  
-**Maintainer**: @esspron / GitHub: esspron/vitacoin
+**Maintainer**: @vishwas-io / GitHub: vishwas-io/vitacoin
 ````````
 
 ## AI Assistant Guidelines

@@ -39,7 +39,7 @@ sudo apt-get update && sudo apt-get install -y git make build-essential curl jq
 ## 2. Build from Source
 
 ```bash
-git clone https://github.com/esspron/VITACOIN.git
+git clone https://github.com/vishwas-io/VITACOIN.git
 cd VITACOIN/vitacoin
 
 CGO_ENABLED=0 go build \

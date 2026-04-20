@@ -329,7 +329,7 @@ Pick a task and start!
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/esspron/vitacoin
+git clone https://github.com/vishwas-io/vitacoin
 cd vitacoin
 
 # 2. Build blockchain
@@ -553,7 +553,7 @@ git push origin feature/payment-gateway-webhooks
 
 ## 📞 Questions?
 
-**Structure unclear?** Open an issue: [GitHub Issues](https://github.com/esspron/vitacoin/issues)  
+**Structure unclear?** Open an issue: [GitHub Issues](https://github.com/vishwas-io/vitacoin/issues)  
 **Can't find something?** Check `docs/README.md` for full documentation index  
 **Want to contribute?** Read `CONTRIBUTING.md` (coming soon)
 

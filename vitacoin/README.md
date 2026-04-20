@@ -2,7 +2,7 @@
 
 > A payment-focused Layer 1 blockchain built on Cosmos SDK — fast, fee-efficient, IBC-native.
 
-[![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/esspron/VITACOIN)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/vishwas-io/VITACOIN)
 [![Go Version](https://img.shields.io/badge/go-1.21+-blue)](https://golang.org)
 [![Chain](https://img.shields.io/badge/chain-vitacoin--1-purple)](https://vitacoin.network)
 [![Mainnet](https://img.shields.io/badge/mainnet-August%202026-orange)](https://vitacoin.network)

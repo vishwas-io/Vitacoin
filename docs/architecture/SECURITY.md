@@ -719,6 +719,6 @@ func (k Keeper) IsPaymentExpired(ctx context.Context, payment types.Payment) boo
 ---
 
 **Security Contact**: security@vitacoin.network  
-**Bug Bounty**: https://github.com/esspron/VITACOIN/security/policy  
+**Bug Bounty**: https://github.com/vishwas-io/VITACOIN/security/policy  
 **Last Security Audit**: Pending (Q1 2026)
 

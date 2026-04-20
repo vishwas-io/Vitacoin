@@ -278,7 +278,7 @@ npm run dev
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/esspron/vitacoin
+   git clone https://github.com/vishwas-io/vitacoin
    cd vitacoin/vitapay
    ```
 
@@ -479,7 +479,7 @@ We welcome contributions! Here's how:
 - [CosmJS Docs](https://cosmos.github.io/cosmjs/)
 
 ### Community
-- **GitHub**: [github.com/esspron/vitacoin](https://github.com/esspron/vitacoin)
+- **GitHub**: [github.com/vishwas-io/vitacoin](https://github.com/vishwas-io/vitacoin)
 - **Discord**: Coming soon
 - **Forum**: Coming soon
 

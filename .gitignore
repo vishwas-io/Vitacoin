@@ -200,3 +200,4 @@ wallet.dat
 # -----------------------------------------------------------------------------
 # Add any project-specific ignores here
 vitacoind
+vitacoin/vitacoind-linux-amd64

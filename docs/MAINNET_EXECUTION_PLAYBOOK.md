@@ -1,7 +1,7 @@
 # VITACOIN MAINNET EXECUTION PLAYBOOK
 
 > Generated: 2026-04-09 | Chain: vitacoin-1 | SDK: v0.50.15 | Binary: vitacoind
-> Repo: github.com/esspron/VITACOIN | Target: August 2026
+> Repo: github.com/vishwas-io/VITACOIN | Target: August 2026
 
 ---
 
@@ -459,7 +459,7 @@ gcloud compute firewall-rules create vitacoin-metrics \
 ```bash
 export PATH=$PATH:/usr/local/go/bin
 
-git clone https://github.com/esspron/VITACOIN.git
+git clone https://github.com/vishwas-io/VITACOIN.git
 cd VITACOIN
 git checkout v1.0.0
 
@@ -660,7 +660,7 @@ git push origin main
 
 # All validators download:
 curl -o ~/.vitacoin/config/genesis.json \
-  https://raw.githubusercontent.com/esspron/VITACOIN/main/genesis/mainnet/genesis.json
+  https://raw.githubusercontent.com/vishwas-io/VITACOIN/main/genesis/mainnet/genesis.json
 
 # Verify checksum
 sha256sum ~/.vitacoin/config/genesis.json
@@ -1354,7 +1354,7 @@ vitacoind tx gov submit-proposal software-upgrade "v1.1.0" \
   --title "Upgrade to v1.1.0" \
   --description "Bug fixes and improvements" \
   --upgrade-height <target_height> \
-  --upgrade-info '{"binaries":{"linux/amd64":"https://github.com/esspron/VITACOIN/releases/download/v1.1.0/vitacoind-v1.1.0-linux-amd64?checksum=sha256:<hash>"}}' \
+  --upgrade-info '{"binaries":{"linux/amd64":"https://github.com/vishwas-io/VITACOIN/releases/download/v1.1.0/vitacoind-v1.1.0-linux-amd64?checksum=sha256:<hash>"}}' \
   --deposit 10000000000uvita \
   --from validator \
   --chain-id vitacoin-1 \
@@ -1375,7 +1375,7 @@ mkdir -p ~/.vitacoin/cosmovisor/upgrades/v1.1.0/bin
 
 # Option A: Download pre-built
 wget -O ~/.vitacoin/cosmovisor/upgrades/v1.1.0/bin/vitacoind \
-  https://github.com/esspron/VITACOIN/releases/download/v1.1.0/vitacoind-v1.1.0-linux-amd64
+  https://github.com/vishwas-io/VITACOIN/releases/download/v1.1.0/vitacoind-v1.1.0-linux-amd64
 chmod +x ~/.vitacoin/cosmovisor/upgrades/v1.1.0/bin/vitacoind
 
 # Option B: Build from source

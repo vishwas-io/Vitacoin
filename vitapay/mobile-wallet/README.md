@@ -320,7 +320,7 @@ POST /api/v1/devices
 ## Support
 
 **Developers**: mobile@vitacoin.network  
-**Issues**: [GitHub Issues](https://github.com/esspron/vitacoin/issues)
+**Issues**: [GitHub Issues](https://github.com/vishwas-io/vitacoin/issues)
 
 ---
 

@@ -795,7 +795,7 @@ vitacoind tx bank send mywallet <recipient> 1000uvita
 
 2. **Install Software**
    ```bash
-   git clone https://github.com/esspron/vitacoin
+   git clone https://github.com/vishwas-io/vitacoin
    cd vitacoin/vitacoin
    make install
    ```
@@ -816,7 +816,7 @@ vitacoind tx bank send mywallet <recipient> 1000uvita
 
 1. **Clone Repository**
    ```bash
-   git clone https://github.com/esspron/vitacoin
+   git clone https://github.com/vishwas-io/vitacoin
    ```
 
 2. **Build Blockchain**
@@ -887,7 +887,7 @@ vitacoind tx bank send mywallet <recipient> 1000uvita
 - **Twitter**: [@VitacoinNetwork](#) (Coming soon)
 
 ### Developer Support
-- **GitHub**: https://github.com/esspron/vitacoin
+- **GitHub**: https://github.com/vishwas-io/vitacoin
 - **Documentation**: https://docs.vitacoin.network (Coming soon)
 - **API Reference**: https://api.vitacoin.network/docs (Coming soon)
 

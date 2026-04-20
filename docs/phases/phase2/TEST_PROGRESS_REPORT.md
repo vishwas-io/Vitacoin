@@ -403,7 +403,7 @@ const (
 ## 📞 Questions or Issues?
 
 **Contact**:
-- GitHub: https://github.com/esspron/vitacoin
+- GitHub: https://github.com/vishwas-io/vitacoin
 - Documentation: In progress
 - Security: security@vitacoin.network
 

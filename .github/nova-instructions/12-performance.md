@@ -104,7 +104,7 @@ make --version
 
 ### Step 1: Clone
 ```bash
-git clone https://github.com/esspron/VITACOIN.git
+git clone https://github.com/vishwas-io/VITACOIN.git
 cd VITACOIN
 ```
 

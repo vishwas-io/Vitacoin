@@ -46,7 +46,7 @@
 - [ ] Rate limiting: stub → real implementation (msg_server_validation.go:238)
 - [ ] `make test` all green — coverage ≥50%
 - [ ] Genesis & vesting setup
-- [ ] Commit & push to `esspron/VITACOIN`
+- [ ] Commit & push to `vishwas-io/VITACOIN`
 - [ ] Update STATUS.md — mark Phase 3 complete
 
 ---
